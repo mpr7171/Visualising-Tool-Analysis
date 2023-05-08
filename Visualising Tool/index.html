@@ -22,20 +22,22 @@
 
   <div class="spacer"></div>
 
+
   <div class="container">
+
     <div class="main-box">
       <h1>Log In</h1>
       <form action="">
         <div class="input-box">
           <span class= "icon"><i class='bx bxs-envelope'></i></span>
-          <input type="email" required>
+          <input type="email"  id ="login_email"required>
           <label>Email</label>
         </div>
 
 
         <div class="input-box">
           <span class="icon"><i class='bx bxs-lock-alt' ></i></span>
-          <input type="password" required>
+          <input type="password" id="login_password" required>
           <label>Password</label>
         </div>
 
@@ -44,15 +46,84 @@
           <a href="#">Forget Password?</a>
           </div>
 
-          <button type="submit" class="btn">Login</button>
+          <button type="submit" id="login" class="btn">Login</button>
 
           <div class="register">
-            <p>Dont have an account?<a href="#" class="register-link">Sign Up!</a></p>
+            <p>Don't have an account? <button class="register-button" onclick="location.href='signup.html'">Sign Up!</button></p>
           </div>
 
-      </form>
+     
     </div>
   </div>
 
 </body>
+
+<!-- FireBase Authentification -->
+
+  <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-analytics.js";
+      import { getAuth, signInWithCustomToken,signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
+   
+
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+          const firebaseConfig = {
+            apiKey: "AIzaSyCChcCcPF_PNMauFSZrD2SDyqVgdWny9kA",
+            authDomain: "scorex-35800.firebaseapp.com",
+            projectId: "scorex-35800",
+            storageBucket: "scorex-35800.appspot.com",
+            messagingSenderId: "511213887827",
+            appId: "1:511213887827:web:228548366825f2b37441a6",
+            measurementId: "G-JV8FXY5TV8"
+          };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app); 
+      const auth = getAuth();
+
+    console.log(app)
+    
+      //login code 
+      document.getElementById("login").addEventListener("click", function() {
+        var email =  document.getElementById("login_email").value;
+        var password = document.getElementById("login_password").value;
+
+        signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          // Signed in 
+          const user = userCredential.user;
+          console.log(user);
+          alert(user.email+" Login successfully!!!");
+          document.getElementById('logout').style.display = 'block';
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          console.log(errorMessage);
+          alert(errorMessage);
+        });		  		  
+      }); 
+
+    //   //logout code 
+    //   document.getElementById("logout").addEventListener("click", function() {
+		//   signOut(auth).then(() => {
+		// 	  // Sign-out successful.
+		// 	  console.log('Sign-out successful.');
+		// 	  alert('Sign-out successful.');
+		// 	  document.getElementById('logout').style.display = 'none';
+		// 	}).catch((error) => {
+		// 	  // An error happened.
+		// 	  console.log('An error happened.');
+		// 	});		  		  
+	  // });
+
+  </script>
+
 </html>

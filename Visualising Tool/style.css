@@ -157,20 +157,6 @@ body{
   cursor: pointer;
 }
 
-.register{
-  text-align: center;
-  color: #ffffff;
-  font-size: 15px;
-  fnt-weight: 500;
-  margin: 35px 0 10px;
-}
-
-.register p a{
-  font-size: 15px;
-  font-weight: 600;
-  color: #ffffff;
-  margin-left: 5px;
-}
 
 .check {
   display: flex;

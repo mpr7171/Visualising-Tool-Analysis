@@ -1,121 +1,67 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Sign Up Page</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+
+  <link rel="stylesheet"
+  href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+ <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;1,400&display=swap" rel="stylesheet">
 </head>
 <body>
-   
-	<form id="myForm">
-        <div class="col-sm-4">
-            <div class="form-group">
-              <label for="name">Name</label>
-              <input type="text" name="name" id="name" class="form-control" placeholder="Enter your name">
-            </div>
-          
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input type="text" name="email" id="email" class="form-control" placeholder="Enter your email">
-            </div>
-          
-            <div class="form-group">
-              <label for="password">Password</label>
-              <input type="password" name="password" id="password" class="form-control" placeholder="Enter your password">
-            </div>
-          
-            <div class="form-group">
-              <label for="confirm_password">Reconfirm Password</label>
-              <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="Re-enter your password">
-            </div>
-          
-            <button type="button" id="register" name="register" class="btn btn-success">Register Now</button>
-          </div>
-    </form>
-    
-      
+  <div class="header">
+    <div class="logo">
+      <img src="img/mulogo.png" alt="University Logo">
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+
+  <div class="container">
+
+    <div class="main-box">
+      <h1>Sign Up</h1>
+      <form action="">
+        <div class="input-box">
+          <span class="icon"><i class='bx bxs-user'></i></span>
+          <input type="text" id="signup_name" required>
+          <label>Name</label>
+        </div>
+
+        <div class="input-box">
+          <span class= "icon"><i class='bx bxs-envelope'></i></span>
+          <input type="email"  id ="signup_email" required>
+          <label>Email</label>
+        </div>
+
+
+        <div class="input-box">
+          <span class="icon"><i class='bx bxs-lock-alt' ></i></span>
+          <input type="password" id="signup_password" required>
+          <label>Password</label>
+        </div>
+
+        <div class="input-box">
+          <span class="icon"><i class='bx bxs-lock-alt' ></i></span>
+          <input type="password" id="signup_confirm_password" required>
+          <label>Confirm Password</label>
+        </div>
+
+        <form id="signup-form">
+
+          <button type="submit" class="btn" onclick="signup()">Sign Up</button>
+        </form>
+
+
+      </form>
+    </div>
+  </div>
 
 </body>
-
-<!-- FireBase Authentification -->
-
-<script type="module">
-    // Import the functions you need from the SDKs you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-analytics.js";
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
-
-    // import { getAuth, signInWithCustomToken } from "firebase/auth";
-
-    // TODO: Add SDKs for Firebase products that you want to use
-    // https://firebase.google.com/docs/web/setup#available-libraries
-
-      // Your web app's Firebase configuration
-      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-        const firebaseConfig = {
-          apiKey: "AIzaSyCChcCcPF_PNMauFSZrD2SDyqVgdWny9kA",
-          authDomain: "scorex-35800.firebaseapp.com",
-          projectId: "scorex-35800",
-          storageBucket: "scorex-35800.appspot.com",
-          messagingSenderId: "511213887827",
-          appId: "1:511213887827:web:228548366825f2b37441a6",
-          measurementId: "G-JV8FXY5TV8"
-        };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app); 
-    const auth=getAuth();
-
-    console.log(app)
-  
-    //for a new user registration
-    document.getElementById("register").addEventListener("click", function() {
-    var form = document.getElementById("myForm");
-    var name = form.name.value;
-    var email =  form.email.value;
-    var password = form.password.value;
-    var pakkapassword = form.confirm_password.value;
-    // rest of the code
-
-      if(password===pakkapassword){
-        //For new registration
-        createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          // Signed in 
-          const user = userCredential.user;
-          console.log(user);
-          // Add user's name to the user's profile
-          user.updateProfile({
-            displayName: name
-          })
-          .then(() => {
-            alert("Registration successfully!!");
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-        })
-
-        .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          // ..
-          console.log(errorMessage);
-          alert(error);
-        });
-
-      } 
-
-      else{
-        alert("password and reconfirm password dont match")
-      }
-
-                        
-    });
-
-</script>
-
-
 </html>

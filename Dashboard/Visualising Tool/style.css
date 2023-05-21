@@ -1,0 +1,204 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+  text-decoration: none;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("img/education-tools.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 20px;
+  z-index: 1;
+}
+
+.logo {
+  float: right;
+  margin-right: 20px;
+  padding-top: 5px;
+}
+
+.logo img {
+  width: 180px;
+  height: 85px;
+}
+
+.spacer {
+  height: 10px;
+}
+
+.container{
+  position: relative;
+  width: 90%;
+  max-width: 400px !important;
+  height: 540px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 20px;
+  border: 2px solid rgba(257, 257, 257, .7);
+  backdrop-filter: blur(15px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.main-box {
+  padding: 40px;
+  width: 100%;
+  margin-bottom: 35px;
+}
+
+.main-box h1 {
+  text-align: center;
+}
+
+.main-box h1 {
+  text-align: center;
+  font-size: 30px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-top: 60px;
+}
+
+.input-box {
+  position: relative;
+  height: 52px;
+  width: 100%;
+  border-bottom: 2px solid #ffffff;
+  margin: 32px 0;
+  padding-top: 20px;
+  padding-right: 50px;
+}
+
+.input-box label {
+  position: absolute;
+  top: 50%;
+  left: 6px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 16px;
+  transition: all ease 0.5s;
+  z-index: 1;
+}
+
+.input-box input{
+  height: 100%;
+  width: 100%;
+  background: transparent;
+  font-size: 17px;
+  font-weight: 600;
+  color: #ffffff;
+  padding: 0 6px;
+}
+
+.input-box .icon{
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  color: #ffffff;
+}
+
+.input-box input:focus~label,
+.input-box input:valid~label {
+  top: -3px;
+  transition: none;
+}
+
+.input-box input:focus {
+  margin-bottom: 30px;
+}
+
+.check {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 500;
+  margin: 15px 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.check label input {
+  vertical-align: middle;
+  margin-right: 6px;
+  accent-color: #ffffff;
+}
+
+.check a:hover{
+  text-decoration: underline;
+}
+
+.check a{
+  margin-left: 20px;
+}
+
+.btn{
+  width: 100%;
+  height: 45px;
+  background: #ffffff;
+  border-radius: 30px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #000000;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.register{
+  text-align: center;
+  color: #ffffff;
+  font-size: 15px;
+  fnt-weight: 500;
+  margin: 35px 0 10px;
+  margin-top: 10px;
+}
+
+.register p a{
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-left: 5px;
+}
+
+.check {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 15px 0;
+}
+
+.check a {
+  margin-left: auto;
+  color: #FFFFFF;
+}
+
+.register p a:link, .register p a:visited {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-left: 5px;
+  text-decoration: none;
+}
+
+.register p a:hover, .register p a:active {
+  text-decoration: underline;
+}

@@ -304,3 +304,27 @@ body{
 .details .courses table tr td{
     text-align: center;
 }
+
+.uploadbtn {
+    position: relative;
+    background-color:#0a0a23;
+    color: #fff;
+    border:none; 
+    border-radius:10px; 
+    padding:15px;
+}
+
+.uploadbtn:hover {
+    background-color:#002ead;
+    transition: 0.7s;
+}
+
+.uploadbtn:focus {
+    outline-color: transparent;
+    outline-style:solid;
+    box-shadow: 0 0 0 4px #5a01a7;
+}
+
+.uploadbtn:active {
+    background-color: #ffbf00;
+}

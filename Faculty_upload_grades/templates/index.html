@@ -1,0 +1,31 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+  <body>
+    <h1>Input Form</h1>
+    <form method="POST" action="/process" enctype="multipart/form-data">
+      <label for="batch">Batch:</label>
+      <input type="text" id="batch" name="batch"><br><br>
+      <label for = "branch"> Branch: </label>
+      <input type = "text" id = "branch" name = "branch"><br><br>
+<!--       
+      <label for="subject_code">Subject Code:</label>
+      <input type="text" id="subject_code" name="subject_code"><br><br> -->
+
+      <label for="exam_type">Exam Type:</label>
+      <select id="exam_type" name="exam_type">
+        <option value="minor1">Minor 1</option>
+        <option value="minor2">Minor 2</option>
+        <option value="endsem">End Semester</option>
+      </select><br><br>
+
+      
+
+      
+      <label for="file">CSV File:</label>
+      <input type="file" id="file" name="file"><br><br>
+      
+      <input type="submit" value="Submit">
+    </form>
+  </body>
+</html>

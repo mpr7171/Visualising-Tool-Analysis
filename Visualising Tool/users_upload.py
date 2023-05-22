@@ -3,10 +3,13 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 from flask import Flask, session, render_template, request, redirect ,jsonify
+from flask_cors import CORS
 import re 
 
 
+
 app=Flask(__name__,template_folder='template')
+CORS(app)
 
 # config={
 #   "apiKey": "AIzaSyC0aEymSwOknoaBuMIYPrzU_JRLXmJF0dU",
@@ -35,11 +38,14 @@ firebase_admin.initialize_app(cred, {
 ref = db.reference('Users')
 
 def extract_roll_number(email):
+    if email is None:
+        return None
+    
     if '20' in email:
-        se = re.sub(r'^(.*?)20', 'se20', email)
+        se = re.sub(r'^(.*?)20', 'se20', str(email))
         roll_number_match = re.search(r'^[^@]+', se)
     else:
-        roll_number_match = re.search(r'^[^@]+', email)
+        roll_number_match = re.search(r'^[^@]+', str(email))
 
     if roll_number_match:
         roll_number = roll_number_match.group(0)
@@ -49,14 +55,14 @@ def extract_roll_number(email):
     return roll_number
 
 def extraction(email):
-    year_match = re.search(r'\d+', email)
+    year_match = re.search(r'\d+', str(email))
     if year_match:
         year = year_match.group(0)
     else:
         year = None
 
     # Extract the branch using the regular expression pattern
-    branch_match = re.search(r'\d+(.*?)\d+', email)
+    branch_match = re.search(r'\d+(.*?)\d+', str(email))
     if branch_match:
         branch = branch_match.group(1)
     else:
@@ -72,21 +78,23 @@ def signup():
     email = request.form.get('email')
     password = request.form.get('pass')
     confirm_password = request.form.get('cpass')
-    year,branch= extraction(email)
-    rollNo=extract_roll_number(email)
+
+    # year,branch= extraction(email)
+    # rollNo=extract_roll_number(email)
 
     #User Json
     user_data = {
         'name': name,
         'email': email,
-        'branch':branch,
-        'rollNo':rollNo,
-        'admissionYear':year,
+        # 'branch':branch,
+        # 'rollNo':rollNo,
+        # 'admissionYear':year,
         'password': password,
         'confirm_password': confirm_password
     }
 
     # Push the user data to the Firebase Realtime Database
+    
     new_user = ref.push(user_data)
 
     # Return a response (optional)
@@ -94,5 +102,6 @@ def signup():
 
 
 if __name__ == '__main__':
+    app.debug = True
     app.run()
 

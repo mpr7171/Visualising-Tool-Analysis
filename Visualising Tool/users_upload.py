@@ -1,4 +1,4 @@
-import pyrebase 
+import pyrebase
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
@@ -79,16 +79,34 @@ def signup():
     password = request.form.get('pass')
     confirm_password = request.form.get('cpass')
 
-    # year,branch= extraction(email)
-    # rollNo=extract_roll_number(email)
+    year,branch= extraction(email)
+    rollNo=extract_roll_number(email)
+
+    if branch == "uari":
+        branch = "AI"
+
+    if branch == "ucse":
+        branch = "CSE"
+
+    if branch == "umee":
+        branch = "ME"
+
+    if branch == "ueee":
+        branch = "EEE"
+
+    if branch == "ucam":
+        branch = "CM"
+
+    if branch == "uece":
+        branch = "ECE"
 
     #User Json
     user_data = {
         'name': name,
         'email': email,
-        # 'branch':branch,
-        # 'rollNo':rollNo,
-        # 'admissionYear':year,
+        'branch':branch,
+        'rollNo':rollNo,
+        'admissionYear':year,
         'password': password,
         'confirm_password': confirm_password
     }

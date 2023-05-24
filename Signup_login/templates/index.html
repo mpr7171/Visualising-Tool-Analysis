@@ -2,8 +2,9 @@
 <html>
 <head>
   <title>Student Dashboard</title>
-  <link rel="stylesheet" href="styles_dashboard.css">
-
+  <!-- <link rel="stylesheet" href="styles_dashboard.css"> -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles_dashboard.css') }}">
+  
   <link rel="stylesheet"
   href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
 
@@ -19,27 +20,37 @@
       </div>
       <div id="navigation" class="hidden">
         <div id="scorex-mobile">
-          <img src="img_dashb/ScoreX Log.png" alt="Score Logo" id="score-logo-mobile">
+          <img src="{{url_for('static', filename='img_dashb/ScoreX Log.png')}}" alt="Score Logo" id="score-logo-mobile">
         </div>
         <ul id="nav-menu">
-          <li><a href="#"><img src="img_dashb/home.png" alt="Home" class="nav-logo"> <span>Home</span></a></li>
-          <li><a href="#"><img src="img_dashb/grades.png" alt="Grades" class="nav-logo"> <span>Grades</span></a></li>
-          <li><a href="#"><img src="img_dashb/analyse.png" alt="Analytics" class="nav-logo"> <span>Analytics</span></a></li>
-          <li><a href="Visualising Tool/index.html" id="logout-button"><img src="img_dashb/log-out.png" alt="Logout" class="nav-logo"> <span>Logout</span></a></li>
+          <li><a href="#"><img src="{{ url_for('static', filename='img_dashb/home.png') }}" alt="Home" class="nav-logo"> <span>Home</span></a></li>
+          <li><a href="#"><img src="{{ url_for('static', filename='img_dashb/grades.png') }}" alt="Grades" class="nav-logo"> <span>Grades</span></a></li>
+          <li><a href="#"><img src="{{ url_for('static', filename='img_dashb/analyse.png') }}" alt="Analytics" class="nav-logo"> <span>Analytics</span></a></li>
+          <li><a href="{{ url_for('login') }}" id="logout-button"><img src="{{url_for('static', filename='img_dashb/log-out.png')}}" alt="Logout" class="nav-logo"> <span>Logout</span></a></li>
+
+    
+
         </ul>
       </div>
     </div>
     <div id="welcome-container">
-      <h1 id="welcome-heading">Welcome, Pranav Reddy</h1>
+      <h1 id="welcome-heading">Welcome, {{ username }}</h1>
     </div>
     <div id="dashboard-right">
       <div id="student-profile">
-        <img src="img_dashb/man.jpg" alt="Student Profile Picture" class="profile-image">
-        <h2 class="profile-name">Pranav Reddy</h2>
-        <p class="profile-info"><b>Branch:</b> AI</p>
-        <p class="profile-info"><b>Sem:</b> 6</p>
-        <p class="profile-id"><b>ID:</b> SE20UARI090</p>
-        <p class="profile-mail"><b>Mail:</b> pranav20uari090@mahindrauniversity.edu.in</p>
+
+        <!-- scr="{{ url_for('static', filename='images/foo.jpg') }}" -->
+
+        <!-- <img src="img_dashb/man.jpg" alt="Student Profile Picture" class="profile-image"> -->
+
+        <img src="{{ url_for('static', filename='img_dashb/man.jpg') }}" alt="Student Profile Picture" class="profile-image">
+
+
+        <h2 class="profile-name">{{ username }}</h2>
+        <p class="profile-info"><b>Branch:</b> {{ branch }} </p>
+        <p class="profile-info"><b>Sem:</b>{{ 6 }}</p>
+        <p class="profile-id"><b>ID:</b>{{ student_id }}</p>
+        <p class="profile-mail"><b>Mail:</b>{{ email }}</p>
       </div>
     </div>
     <div id="chat-icon" onclick="toggleChat()">

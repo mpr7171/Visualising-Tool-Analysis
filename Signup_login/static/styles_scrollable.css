@@ -1,0 +1,137 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+  text-decoration: none;
+  font-family: 'Poppins', sans-serif;
+}
+
+#score-logo-mobile {
+  width: 160px;
+  height: 120px;
+  margin: 4px auto;
+  padding: 10px;
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#dashboard {
+  background-color: lightgrey;
+  padding: 5px;
+  flex: 0 0 auto;
+  transition: background-color 0.3s ease-in-out;
+  animation: fadeIn 0.5s ease-in-out 0.5s forwards;
+  margin-right: 20px;
+  overflow-y: auto;
+}
+
+#dashboard.flex {
+  flex: 0 0 0;
+  margin-right: 0;
+  transition: flex 0.3s ease-in-out;
+}
+
+#header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  opacity: 0;
+  animation: fadeIn 0.5s ease-in-out 0.5s forwards;
+}
+
+#navigation {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+  position: relative;
+}
+
+#scorex-mobile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+#nav-menu {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+#nav-menu li {
+  margin-bottom: 10px;
+  padding: 10px;
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: fadeIn 0.1s ease-in-out forwards;
+  animation-delay: 0.1s;
+}
+
+#nav-menu li a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #000;
+  background-color: lightgrey;
+  transition: background-color 0.3s ease-in-out;
+  padding: 10px;
+}
+
+.nav-logo {
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+}
+
+#nav-menu li a .nav-logo {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+}
+
+#nav-menu li a span {
+  margin-right: 10px;
+}
+
+#nav-menu li a:hover {
+  background-color: lightblue;
+  transform: scale(1.1);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background-color: white;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#navigation.visible {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}

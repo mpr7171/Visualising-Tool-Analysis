@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Student Dashboard</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <!-- <link rel="stylesheet" href="styles_dashboard.css"> -->
   <link rel="stylesheet" href="{{ url_for('static', filename='styles_dashboard.css') }}">
   
@@ -23,19 +24,26 @@
           <img src="{{url_for('static', filename='img_dashb/ScoreX Log.png')}}" alt="Score Logo" id="score-logo-mobile">
         </div>
         <ul id="nav-menu">
-          <li><a href="#"><img src="{{ url_for('static', filename='img_dashb/home.png') }}" alt="Home" class="nav-logo"> <span>Home</span></a></li>
-          <li><a href="#"><img src="{{ url_for('static', filename='img_dashb/grades.png') }}" alt="Grades" class="nav-logo"> <span>Grades</span></a></li>
-          <li><a href="#"><img src="{{ url_for('static', filename='img_dashb/analyse.png') }}" alt="Analytics" class="nav-logo"> <span>Analytics</span></a></li>
-          <li><a href="{{ url_for('login') }}" id="logout-button"><img src="{{url_for('static', filename='img_dashb/log-out.png')}}" alt="Logout" class="nav-logo"> <span>Logout</span></a></li>
+          <li><a href="{{ url_for('dashboard') }}"><img src="{{ url_for('static', filename='img_dashb/home.png') }}" alt="Home" class="nav-logo"> <span>Home</span></a></li>
+          <li><a href="{{ url_for('grades') }}"><img src="{{ url_for('static', filename='img_dashb/grades.png') }}" alt="Grades" class="nav-logo"> <span>Grades</span></a></li>
+          <li><a href="{{ url_for('analytics') }}"><img src="{{ url_for('static', filename='img_dashb/analyse.png') }}" alt="Analytics" class="nav-logo"> <span>Analytics</span></a></li>
+          <li><a href="{{ url_for('logout') }}" id="logout-button"><img src="{{url_for('static', filename='img_dashb/log-out.png')}}" alt="Logout" class="nav-logo"> <span>Logout</span></a></li>
 
     
-
         </ul>
       </div>
     </div>
     <div id="welcome-container">
       <h1 id="welcome-heading">Welcome, {{ username }}</h1>
       <div id="rectangular-container">
+
+        <div id="graph-element" class="graph-element">
+
+          {{ graph_html|safe }}
+
+        </div>
+        
+        <!-- {{ graph_html|safe }} -->
 
       </div>
     </div>

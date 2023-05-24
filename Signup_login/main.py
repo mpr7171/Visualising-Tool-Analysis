@@ -4,7 +4,6 @@ from firebase_admin import db
 from flask import Flask, session, render_template, request, redirect, request, flash
 import re
 import json
-import argparse
 import requests
 
 

@@ -108,7 +108,7 @@ def upload_to_database(batch, exam_type, file):
                 
             
 
-    
+
     
     
 

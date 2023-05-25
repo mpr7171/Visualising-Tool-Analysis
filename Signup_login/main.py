@@ -91,52 +91,106 @@ def sign_in_with_email_and_password(email, password, return_secure_token = True)
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
+
     if request.method == 'POST':
 
         email = request.form.get('email')
         password = request.form.get('password')
         
         try:
-
             token = sign_in_with_email_and_password(email, password)
             # print(token)
 
-            if 'code' in token:
-                if token['code'] == 400:
-                    if token["message"] == "EMAIL_NOT_FOUND":
-                        return render_template('login.html')
+            if 'error' in token:
+                if 'code' in token['error']:
+                    if token['code'] == 400:
+                        if token["message"] == "EMAIL_NOT_FOUND":
+                            return redirect('/')
+                            
+                        elif token["message"] == "INVALID_PASSWORD":
+                            return redirect('/')
                         
-                    if token["message"] == "INVALID_PASSWORD":
-                        return render_template('login.html')
-                    
+                        else:
+                            return redirect('/')
+
+                        
             if "registered" in token:
-                if token["registered"] == True:
-                    email = token['email']
-                    name = token['displayName']
+                email_splits = email.split("@")
 
-                    rollNo=extract_roll_number(email)
+                is_faculty = False
+                if "." in email_splits[0]:
+                    is_faculty = True
 
-                    year,branch= extraction(email)
-                    branch_dict = {'uari' : "AI", 
-                       'ucse' : "CSE", 
-                       'umee' : "ME", 
-                       'uece' : "ECE", 
-                       'ucam' : "CM",
-                       'ueee' : "EEE"}
+                # print(is_faculty)
+
+                if is_faculty == False:    
+
+                    if token["registered"] == True:
+                        email = token['email']
+                        name = token['displayName']
+
+                        # print(name)
+
+                        rollNo=extract_roll_number(email)
+
+                        year,branch= extraction(email)
+                        branch_dict = {'uari' : "AI", 
+                        'ucse' : "CSE", 
+                        'umee' : "ME", 
+                        'uece' : "ECE", 
+                        'ucam' : "CM",
+                        'ueee' : "EEE"}
+                
+                        branch = branch_dict[branch]
+
+
+                        session['student_id'] = rollNo.upper()
+                        session['branch'] = branch
+                        session['username'] = name
+                        session['year'] = year
+
+                        session['logged_in'] = True
+
+                        return redirect(url_for('dashboard'))
+                    
+                    else:
+                        # print("ooopss")
+                        # return redirect(url_for('login'))
+                        render_template('login.html')
+
             
-                    branch = branch_dict[branch]
+
+                else:
+                    if token["registered"] == True:
+                        email = token['email']
+                        # name = token['displayName']
+
+                        fullname = email_splits[0].split(".")
+                        fname = fullname[0]
+                        lname = fullname[1]
+                        name = fname + " " + lname
+
+                        session['faculty_name'] = name
+                        session['faculty_email'] = email
+
+                        session['logged_in'] = True
+
+                        # return render_template('index_faculty_db.html', prof_name = name)
+
+                        return redirect(url_for('faculty_dashboard'))
+                    
+                    else:
+                        print("ooopss2")
+                        # return redirect(url_for('dashboard'))
+                        render_template('login.html')
 
 
-            session['student_id'] = rollNo.upper()
-            session['branch'] = branch
-            session['username'] = name
-            session['year'] = year
 
-            session['logged_in'] = True
+            else:
+                render_template('login.html')
+                
 
-            return redirect(url_for('dashboard'))
-        
-        except Exception as e:
+        except:
             return render_template('login.html')
     
     else:
@@ -154,8 +208,6 @@ def dashboard():
 
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-
-    params = request.args.get('params')
 
     student_id = session['student_id']
     branch = session['branch']
@@ -184,21 +236,15 @@ def dashboard():
 
     fig = go.Figure()
 
+    # fig.add_trace(go.Scatter(x=sems_arr, y=gpa_arr, mode='markers+lines', name='GPA'))
     fig.add_trace(go.Scatter(x=sems_arr, y=gpa_arr, mode='markers+lines', name='GPA'))
     fig.update_xaxes(title_text="SEM")
     fig.update_yaxes(title_text="GPA obtained")
-    # fig.show()
     fig.update_layout(
         height=492, width=760
     )
 
     graph_html = fig.to_html(full_html=False, include_plotlyjs=True)
-
-    
-    # fig.update_layout(height=1200, width=1500)
-
-    # fig.write_html('templates/viz1.html')
-
 
 
     return render_template('index.html', student_id = student_id, branch = branch, username = username, graph_html=graph_html)
@@ -222,12 +268,22 @@ def signup():
         confirm_password = request.form.get('signup_confirm_password')
 
 
+
         if password != confirm_password:
             error_message = "Passwords do not match. Please try again."
             return render_template('signup.html', error_message=error_message)
 
         try:
-            # print(name)
+
+            if ('mahindrauniversity.edu.in' not in email):
+                raise Exception("Please use only Mahindra University email")
+            
+
+            email_splits = email.split("@")
+
+            if "." in email_splits[0]:
+                raise Exception("Please use proper Mahindra University's student email")
+
             usr_created = firebase_admin.auth.create_user(email = email, password = password, display_name = name)
 
 
@@ -264,9 +320,18 @@ def signup():
                     'name' : name,
                     'email': email
                 })
+            
 
+            session['student_id'] = rollNo.upper()
+            session['branch'] = branch
+            session['username'] = name
+            session['year'] = year
+
+            session['logged_in'] = True
 
             return redirect('/')
+
+            # return redirect('dashboard')
 
         except Exception as e:
             error = e
@@ -289,8 +354,19 @@ def analytics():
     year = session['year']
     branch = session['branch']
 
-    ref = db.reference(f'/grades/{year}/{branch}')
-    data = ref.get()
+    # ref = db.reference(f'grades/{year}/{branch}')
+
+    path = f'grades/{year}/{branch}'
+    
+    # stud_path = f'{path}/{year}/{branch}'
+
+    ref1 = db.reference(path)
+
+            
+    # ref
+    data = ref1.get()
+
+    print(data)
 
     courses = []
     course_scores_dic = {}
@@ -304,6 +380,7 @@ def analytics():
             curr_scores.append(c_score)
 
         course_scores[k] = curr_scores
+
 
 
     # mean = np.mean(marks)
@@ -382,6 +459,20 @@ def analytics():
 
 
 
+
+
+@app.route('/faculty_dashboard')
+def faculty_dashboard():
+
+    # checks if the session metrics are deleted, if deleted, then stays on the login page
+    if len(session.keys()) == 0:
+        return redirect('/')
+
+    name = session['faculty_name']
+    return render_template('index_faculty_db.html', prof_name = name)
+
+
+
 if __name__ == '__main__':
     app.debug = True
-    app.run()
+    app.run(host='0.0.0.0')

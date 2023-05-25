@@ -22,7 +22,7 @@ app = Flask(__name__)
 
 
 # Initialize Firebase
-cred = credentials.Certificate('D:\\ScoreX\\Visualising-Tool-Analysis\\Faculty_upload_grades\\se-test-7f7e1-firebase-adminsdk-auhlb-b7b4173ae5.json')
+cred = credentials.Certificate('Faculty_upload_scores\Faculty Dashboard\se-test-7f7e1-firebase-adminsdk-auhlb-b7b4173ae5.json')
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://se-test-7f7e1-default-rtdb.firebaseio.com/'
 })
@@ -38,9 +38,9 @@ def index():
 # @app.route('/upload', methods=['POST'])
 
 @app.route('/analytics')
-def analytics(batch, subject_code, exam_type):
+def analytics(batch, subject_code, exam_type,branch):
     database_url = 'https://se-test-7f7e1-default-rtdb.firebaseio.com/'
-    path = 'grades/' + batch + '/' + subject_code
+    path = 'grades/' + batch + '/' +branch + '/' + subject_code
     data = db.reference(path).get()
     studentID = list(data.keys())
     
@@ -159,11 +159,12 @@ def upload_to_database(batch, exam_type, file):
     
     database_url = 'https://se-test-7f7e1-default-rtdb.firebaseio.com/'
     subject_code = fn_contents[0]
+    branch = subject_code[:2]
     
     
     
     
-    path = 'grades/'+batch
+    path = 'grades/'+ batch + '/' + branch
     
   
     
@@ -218,7 +219,7 @@ def upload_to_database(batch, exam_type, file):
 
         
         # firebase_admin.delete_app(firebase_admin.get_app())
-        return analytics(batch, subject_code, exam_type)
+        return analytics(batch, subject_code, exam_type, branch)
         # return ' Added successfully'
     
 

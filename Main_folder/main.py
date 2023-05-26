@@ -603,452 +603,100 @@ def minor2():
     year = session['year']
     branch = session['branch']
 
-    path = f'grades/{year}/{branch}'
-    
+    courses = []
+    course_scores_dic = {}
 
-    (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc) = get_analytics_info(year,branch, exam_type='minor2')
+    for k in data.keys():
+        courses.append(k)
+        curr_scores = []
+        course_scores = data[k]
+        for rollno in course_scores:
+            c_score = course_scores[rollno]
+            curr_scores.append(c_score)
 
-
-    return render_template('index_analytics_m2.html', 
-                        courses=courses,
-                        graphs=graphs,
-                        curr_user_scores = curr_user_scores ,
-                        curr_user_perc = curr_user_perc, 
-                        zip=zip, 
-                        no_data = no_data, disp_msg = disp_msg)
-
-@app.route('/endsem')
-def endsem():
-    year = session['year']
-    branch = session['branch']
-
-    path = f'grades/{year}/{branch}'
-    
-
-    (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc) = get_analytics_info(year,branch, exam_type='endsem')
-
-
-    return render_template('index_analytics_es.html', 
-                        courses=courses,
-                        graphs=graphs,
-                        curr_user_scores = curr_user_scores ,
-                        curr_user_perc = curr_user_perc, 
-                        zip=zip, 
-                        no_data = no_data, disp_msg = disp_msg)
-
-    
+        course_scores[k] = curr_scores
 
 
 
+    # mean = np.mean(marks)
+    # std_dev = np.std(marks)
+    # x_values = np.linspace(mean - 3 * std_dev, mean + 3 * std_dev, 100)
+    # y_values = (1 / (std_dev * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x_values - mean) / std_dev) ** 2)
 
+    # percentiles = np.percentile(marks, [50, 75, 90])
+
+    # # fig = go.Figure()
+    # fig = make_subplots(rows=2, cols=1, row_heights=[0.5, 0.5],
+    #         subplot_titles=("Distrbution of marks across branch", "Histogram of marks (in branch)"))
+
+    # fig.add_trace(go.Scatter(
+    #     x=x_values,
+    #     y=y_values,
+    #     mode='lines',
+    #     name='Normal Distribution'
+    # ))
+
+    # fig.add_trace(go.Scatter(
+    #     x=[percentiles[0], percentiles[0]],
+    #     y=[0, np.max(y_values)],
+    #     mode='lines',
+    #     name='50th Percentile',
+    #     line=dict(dash='dash')
+    # ))
+
+    # fig.add_trace(go.Scatter(
+    #     x=[percentiles[1], percentiles[1]],
+    #     y=[0, np.max(y_values)],
+    #     mode='lines',
+    #     name='75th Percentile',
+    #     line=dict(dash='dash')
+    # ))
+
+    # fig.add_trace(go.Scatter(
+    #     x=[percentiles[2], percentiles[2]],
+    #     y=[0, np.max(y_values)],
+    #     mode='lines',
+    #     name='90th Percentile',
+    #     line=dict(dash='dash')
+    # ))
+
+    # fig.update_layout(
+    #     title='Normal Distribution with Percentiles',
+    #     xaxis_title='Marks',
+    #     yaxis_title='Probability Density'
+    # )
+
+    # histogram = go.Histogram(
+    #     x=marks,
+    #     nbinsx=10,
+    #     name='Marks Distribution'
+    # )
+    # fig.update_xaxes(title_text="Marks")
+    # fig.update_yaxes(title_text="Frequency")
+
+    # fig.add_trace(histogram, row=2, col=1)
+
+    # class_average_str = "{:.2f}".format(mean)
+
+    # fig.update_layout(
+    #     # title='Histogram of marks',
+    #     # xaxis_title='Marks',
+    #     # yaxis_title='Frequency',
+    #     height=1200, width=1500
+    # )
 
 @app.route('/upload')
 def index():
     return render_template('upload.html')
 
-# @app.route('/upload', methods=['POST'])
-
-@app.route('/faculty_analytics')
-def faculty_analytics(batch, subject_code, exam_type,branch):
-    database_url = 'https://se-test-7f7e1-default-rtdb.firebaseio.com/'
-    path = 'grades/' + batch + '/' +branch + '/' + subject_code
-    data = db.reference(path).get()
-    studentID = list(data.keys())
-    
-    
-    
-    
-    
-    
-    # MINOR 1 ----------------------------------------------------------------------
-    if exam_type == "minor1":
-        minor1_grades = []
-        for i in range(len(studentID)):
-            marks = db.reference(path+'/'+studentID[i]).get()
-            minor1_grades.append(marks['minor1'])
-        
-        minor1_df = pd.DataFrame({'Minor1': np.array(minor1_grades)})
-        fig = go.Figure()
-        fig.add_trace(go.Box(y=minor1_df['Minor1'], name="Minor 1"))
-        fig.update_layout(title= "The grade analysis of the course " + subject_code)
-        fig.update_layout(showlegend=True)
-        
-        #Normal Curve 
-        minor1_grades = np.array(minor1_grades)
-        avg_m1 = np.mean(minor1_grades)
-        std = np.std(minor1_grades)
-        
-        
-
-        # # Generate x-axis values
-        x = np.linspace(minor1_grades.min(), minor1_grades.max(), 100)
-        y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
-
-       
-       
-       
-       
-       
-
-        # # Plot the bell curve
-        fig2 = go.Figure(data=go.Scatter(x=x, y=y, mode='lines', name='Bell Curve'))
-        fig2.update_layout(
-            title="The normal distribution analysis of the " + subject_code,
-            xaxis_title='Marks',
-            yaxis_title='Probability Density',
-            showlegend=True
-        )
-        
-        
-        # Calculate the percentiles
-        colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
-        percentiles = [75, 90, 95]
-        percentile_values = np.percentile(minor1_grades, percentiles)
-
-        for percentile, value, color in zip(percentiles, percentile_values, colors):
-            fig2.add_shape(
-                type="line",
-                xref="x",
-                yref="y",
-                x0=value,
-                x1=value,
-                y0=0,
-                y1=max(y),
-                line=dict(color=color, width=2, dash="dash"),
-            )
-
-        # Add invisible scatter traces for legends
-        for percentile, color in zip(percentiles, colors):
-            fig2.add_trace(
-                go.Scatter(
-                    x=[],
-                    y=[],
-                    mode='markers',
-                    marker=dict(color=color, opacity=0),
-                    name=f"{percentile}th Percentile"
-                )
-            )
-
-        fig2.update_layout(showlegend=True)  # Display legends in the graph
-
-        
-        
-        
-        fig3 = go.Figure(data=[go.Histogram(x=minor1_grades)])
-
-
-        fig3.update_layout(
-            title="Histogram for the Minor 1 Grades",
-            xaxis_title="Marks",
-            yaxis_title="Frequency"
-        )
-
-        
-        graph_json = fig.to_json()
-        graph2_json = fig2.to_json()
-        graph3_json = fig3.to_json()
-        
-        
-        
-        
-        
-        
-        #
-        
-        
-        
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json )
-    
-    
-    
-    
-    
-    
-    # MINOR 2 --------------------------------------------------------------------------
-    
-    
-    elif exam_type == "minor2":
-        minor1_grades = []
-        minor2_grades = []
-        for i in range(len(studentID)):
-            
-            marks = db.reference(path+'/'+studentID[i]).get()
-            if(marks['minor1'] == None):
-                return "Minor 1 grades have not been uploaded. Please upload Minor1 grades"
-            minor1_grades.append(marks['minor1'])
-            minor2_grades.append(marks['minor2'])
-        minor1_grades = np.array(minor1_grades)
-        minor2_grades = np.array(minor2_grades)
-        avg_m1 = np.mean(minor1_grades)
-        avg_m2 = np.mean(minor2_grades)
-        minor1_df = pd.DataFrame({'Minor1': np.array(minor1_grades)})
-        minor2_df = pd.DataFrame({'Minor2': np.array(minor2_grades)})
-        fig = go.Figure()
-        fig.add_trace(go.Box(y=minor1_df['Minor1'], name="Minor 1"))
-        fig.add_trace(go.Box(y=minor2_df['Minor2'], name="Minor 2"))
-        fig.update_layout(showlegend=True)
-        
-        
-        
-        std = np.std(minor2_grades)
-        x = np.linspace(minor2_grades.min(), minor2_grades.max(), 100)
-        y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
-        fig2 = go.Figure(data=go.Scatter(x=x, y=y, mode='lines', name='Bell Curve'))
-        fig2.update_layout(
-            title="The normal distribution analysis of the course " + subject_code,
-            xaxis_title='Marks',
-            yaxis_title='Probability Density',
-            showlegend=True
-        )
-        
-        
-        # Calculate the percentiles
-        colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
-        percentiles = [75, 90, 95]
-        percentile_values = np.percentile(minor2_grades, percentiles)
-
-        for percentile, value, color in zip(percentiles, percentile_values, colors):
-            fig2.add_shape(
-                type="line",
-                xref="x",
-                yref="y",
-                x0=value,
-                x1=value,
-                y0=0,
-                y1=max(y),
-                line=dict(color=color, width=2, dash="dash"),
-                name=f"{percentile}th Percentile"
-            )
-        # Update the layout to show the legend
-        fig2.update_layout(showlegend=True)
-        
-        fig3 = go.Figure(data=[go.Histogram(x=minor2_grades)])
-
-
-        fig3.update_layout(
-            title="Histogram for the Minor 2 grades",
-            xaxis_title="Marks",
-            yaxis_title="Frequency"
-        )
-
-        
-        graph_json = fig.to_json()
-        graph2_json = fig2.to_json()
-        graph3_json = fig3.to_json()
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json )
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    # END SEM --------------------------------------------------------------
-    
-    
-    
-    
-    
-    elif exam_type == "endsem":
-        minor1_grades = []
-        minor2_grades = []
-        end_sem_grades = []
-        for i in range(len(studentID)):
-            marks = db.reference(path+'/'+studentID[i]).get()
-            if(marks['minor1'] == None):
-                return "Minor 1 grades have not been uploaded. Please upload Minor1 grades"
-            elif (marks['minor2'] == None):
-                return "Minor 2 grades have not been uploaded. Please upload Minor2 grades"
-            
-            minor1_grades.append(marks['minor1'])
-            minor2_grades.append(marks['minor2'])
-            end_sem_grades.append(marks['endsem'])
-            
-        minor1_grades = np.array(minor1_grades)
-        minor2_grades = np.array(minor2_grades)
-        end_sem_grades = np.array(end_sem_grades)
-        avg_m1 = np.mean(minor1_grades)
-        avg_m2 = np.mean(minor2_grades)
-        avg_endsem = np.mean(end_sem_grades)
-        minor1_df = pd.DataFrame({'Minor1': np.array(minor1_grades)})
-        minor2_df = pd.DataFrame({'Minor2': np.array(minor2_grades)})
-        endsem_df = pd.DataFrame({'End Sem': np.array(end_sem_grades)})
-        fig = go.Figure()
-        fig.add_trace(go.Box(y=minor1_df['Minor1'], name="Minor 1"))
-        fig.add_trace(go.Box(y=minor2_df['Minor2'], name="Minor 2"))
-        fig.add_trace(go.Box(y=endsem_df['End Sem'], name="End Semester"))
-        fig.update_layout(showlegend=True)
-        
-        std = np.std(end_sem_grades)
-        x = np.linspace(end_sem_grades.min(), end_sem_grades.max(), 100)
-        y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
-        fig2 = go.Figure(data=go.Scatter(x=x, y=y, mode='lines', name='Normal dist'))
-        fig2.update_layout(
-            title="The normal distribution  analysis of the " + subject_code,
-            xaxis_title='Marks',
-            yaxis_title='Probability Density',
-            showlegend=True
-        )
-        
-        # Calculate the percentiles
-        colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
-        percentiles = [75, 90, 95]
-        percentile_values = np.percentile(end_sem_grades, percentiles)
-
-        for percentile, value, color in zip(percentiles, percentile_values, colors):
-            fig2.add_shape(
-                type="line",
-                xref="x",
-                yref="y",
-                x0=value,
-                x1=value,
-                y0=0,
-                y1=max(y),
-                line=dict(color=color, width=2, dash="dash"),
-                name=f"{percentile}th Percentile"
-            )
-        # Update the layout to show the legend
-        fig2.update_layout(showlegend=True)
-        
-        
-        fig3 = go.Figure(data=[go.Histogram(x=end_sem_grades)])
-
-
-        fig3.update_layout(
-            title="Histogram of the End Sem Grades",
-            xaxis_title="Marks",
-            yaxis_title="Frequency"
-        )
-        
-        graph_json = fig.to_json()
-        graph2_json = fig2.to_json()
-        graph3_json = fig3.to_json()
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json )
-        
-    
-    return "Analytics cannot be viewed"
-
-
-            
-            
-            
-            
-        
-    
-    
-    
-
-def upload_to_database(batch, exam_type, file):
-    
-    csv_file = request.files['file']
-
-    fn_contents = csv_file.filename.split("_")
-    
-    database_url = 'https://se-test-7f7e1-default-rtdb.firebaseio.com/'
-    subject_code = fn_contents[0]
-    branch = subject_code[:2]
-    
-    
-    
-    
-    path = 'grades/'+ batch + '/' + branch + '/' + subject_code 
-    
-  
-    
-    # input = {'subject_code': subject_code}
-    # response = requests.put(f'{database_url}/{path}/{subject_code}.json',json = input)
 
 
 
 
-    if csv_file and csv_file.filename.endswith('.csv'):
-
-        df_csv = pd.read_csv(csv_file)
-
-        if exam_type == "minor1":
-            for i in range(len(df_csv)):
-                student_id = df_csv['Student_ID'][i]
-                data = {
-                    'student_id': student_id,
-                    'minor1': int(df_csv['Marks'][i])
-                }
-                response = requests.put(f'{database_url}/{path}/{student_id}.json', json=data)
-                if response.status_code == 200:
-                    continue 
-                else:
-                    print("Error: Can't add details")
+    return render_template('index_analytics.html')
 
 
-       
-        elif exam_type == "minor2":
-            for i in range(len(df_csv)):
-                student_id = df_csv['Student_ID'][i]
-                
-                # response = requests.put(f'{database_url}/{path}/{subject_code}/{student_id}.json', json=data)
-                student_ref = db.reference(str(path +'/' + student_id))
-                student_details = student_ref.get()
-                
-                
-                if(student_details == None):
-                    return 'Please upload Minor1 Results'
-                else:
-                    student_details['minor2'] = int(df_csv['Marks'][i])
-                    student_ref.update(student_details)
-                
-            
-           
 
-        elif exam_type == "endsem":
-            for i in range(len(df_csv)):
-                student_id = df_csv['Student_ID'][i]
-                
-                # response = requests.put(f'{database_url}/{path}/{subject_code}/{student_id}.json', json=data)
-                student_ref = db.reference(str(path + '/' + student_id))
-                student_details = student_ref.get()
-                if(student_details == None):
-                    return 'Please upload Minor1 and Minor2 Results'
-                student_details['endsem'] = int(df_csv['Marks'][i])
-                student_ref.update(student_details)
-                
-
-        
-        # firebase_admin.delete_app(firebase_admin.get_app())
-        return faculty_analytics(batch, subject_code, exam_type, branch)
-        # return ' Added successfully'
-    
-
-    else:
-        # firebase_admin.delete_app(firebase_admin.get_app())
-        return 'Invalid file format. Please upload a CSV file.'
-                
-            
-
-
-    
-    
-
-
-@app.route('/process', methods=['POST', 'GET'])
-def process():
-    batch = request.form['batch']
-    # subject_code = request.form['subject_code']
-    exam_type = request.form['exam_type']
-    file = request.files['file']
-    
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
-
-    # Log the received data
-    logger.info("Batch: %s", batch)
-    logger.info("Exam type: %s", exam_type)
-    logger.info("File Name: %s", file.filename)
-    result = upload_to_database(batch, exam_type, file)
-    # Process the user inputs and file as needed
-
-    return result
 
 
 @app.route('/faculty_dashboard')
@@ -1059,324 +707,9 @@ def faculty_dashboard():
         return redirect('/')
 
     name = session['faculty_name']
-    
-    db_name = name.replace(' ', '_')
-    path = 'faculty/' + db_name + '/Courses'
-    # database_url = 'https://se-test-7f7e1-default-rtdb.firebaseio.com/'
-    
-    courses = db.reference(path).get()
-    course_list = list(courses.keys())
-    course_names = []
-    for i in range(len(course_list)):
-        c_name = db.reference('course_names/'+course_list[i]+'/course_name').get()
-        course_names.append(c_name)
-        
-    
-        
-    
-    return render_template('index_faculty_db.html', prof_name = name, course_list = course_list, course_names = course_names)
+    return render_template('index_faculty_db.html', prof_name = name)
 
 
-## need to make changes for faculty database
-@app.route('/menu_analytics')
-def menu_analytics():
-    database_url = 'https://se-test-7f7e1-default-rtdb.firebaseio.com/'
-    course = request.args.get('course')
-    
-    #Temporarily assigning the batch and branch, will change it later
-    
-    batch = '19'
-    branch = 'AI'
-    path = 'grades/' + batch + '/' +branch + '/' + course
-    
-    
-    
-    
-    data = db.reference(path).get()
-    if data == None:
-        return render_template('failure.html')
-    
-    
-    studentID = list(data.keys())
-    
-    
-    
-    
-    
-    presence = db.reference(path+'/'+studentID[0]).get()
-    check = list(presence.keys())
-   
-    
-
-    
-    
-    
-    
-    if ('endsem' in check):
-        minor1_grades = []
-        minor2_grades = []
-        end_sem_grades = []
-        for i in range(len(studentID)):
-            marks = db.reference(path+'/'+studentID[i]).get()
-            if('minor1' not in list(marks.keys())):
-                return "Minor 1 grades have not been uploaded. Please upload Minor1 grades"
-    
-            if('minor2' not in list(marks.keys())):
-                return "Minor 2 grades have not been uploaded. Please upload Minor2 grades"
-    
-            
-            minor1_grades.append(marks['minor1'])
-            minor2_grades.append(marks['minor2'])
-            end_sem_grades.append(marks['endsem'])
-            
-        minor1_grades = np.array(minor1_grades)
-        minor2_grades = np.array(minor2_grades)
-        end_sem_grades = np.array(end_sem_grades)
-        avg_m1 = np.mean(minor1_grades)
-        avg_m2 = np.mean(minor2_grades)
-        avg_endsem = np.mean(end_sem_grades)
-        minor1_df = pd.DataFrame({'Minor1': np.array(minor1_grades)})
-        minor2_df = pd.DataFrame({'Minor2': np.array(minor2_grades)})
-        endsem_df = pd.DataFrame({'End Sem': np.array(end_sem_grades)})
-        fig = go.Figure()
-        fig.add_trace(go.Box(y=minor1_df['Minor1'], name="Minor 1"))
-        fig.add_trace(go.Box(y=minor2_df['Minor2'], name="Minor 2"))
-        fig.add_trace(go.Box(y=endsem_df['End Sem'], name="End Semester"))
-        fig.update_layout(showlegend=True)
-        
-        std = np.std(end_sem_grades)
-        x = np.linspace(end_sem_grades.min(), end_sem_grades.max(), 100)
-        y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
-        fig2 = go.Figure(data=go.Scatter(x=x, y=y, mode='lines', name='Normal dist'))
-        fig2.update_layout(
-            title="The normal distribution  analysis of the " + course,
-            xaxis_title='Marks',
-            yaxis_title='Probability Density',
-            showlegend=True
-        )
-        
-        # Calculate the percentiles
-        colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
-        percentiles = [75, 90, 95]
-        percentile_values = np.percentile(end_sem_grades, percentiles)
-
-        for percentile, value, color in zip(percentiles, percentile_values, colors):
-            fig2.add_shape(
-                type="line",
-                xref="x",
-                yref="y",
-                x0=value,
-                x1=value,
-                y0=0,
-                y1=max(y),
-                line=dict(color=color, width=2, dash="dash"),
-                name=f"{percentile}th Percentile"
-            )
-        # Update the layout to show the legend
-        fig2.update_layout(showlegend=True)
-        
-        
-        fig3 = go.Figure(data=[go.Histogram(x=end_sem_grades)])
-
-
-        fig3.update_layout(
-            title="Histogram of the End Sem Grades",
-            xaxis_title="Marks",
-            yaxis_title="Frequency"
-        )
-        
-        graph_json = fig.to_json()
-        graph2_json = fig2.to_json()
-        graph3_json = fig3.to_json()
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json )
-        
-    
-    
-    
-    elif ('minor2' in check):
-        minor1_grades = []
-        minor2_grades = []
-        for i in range(len(studentID)):
-            
-            marks = db.reference(path+'/'+studentID[i]).get()
-            
-            
-            if('minor1' not in list(marks.keys())):
-                return "Minor 1 grades have not been uploaded. Please upload Minor1 grades"
-            
-            
-            
-            minor1_grades.append(marks['minor1'])
-            minor2_grades.append(marks['minor2'])
-        minor1_grades = np.array(minor1_grades)
-        minor2_grades = np.array(minor2_grades)
-        avg_m1 = np.mean(minor1_grades)
-        avg_m2 = np.mean(minor2_grades)
-        minor1_df = pd.DataFrame({'Minor1': np.array(minor1_grades)})
-        minor2_df = pd.DataFrame({'Minor2': np.array(minor2_grades)})
-        fig = go.Figure()
-        fig.add_trace(go.Box(y=minor1_df['Minor1'], name="Minor 1"))
-        fig.add_trace(go.Box(y=minor2_df['Minor2'], name="Minor 2"))
-        fig.update_layout(showlegend=True)
-        
-        
-        
-        std = np.std(minor2_grades)
-        x = np.linspace(minor2_grades.min(), minor2_grades.max(), 100)
-        y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
-        fig2 = go.Figure(data=go.Scatter(x=x, y=y, mode='lines', name='Bell Curve'))
-        fig2.update_layout(
-            title="The normal distribution analysis of the course " + course,
-            xaxis_title='Marks',
-            yaxis_title='Probability Density',
-            showlegend=True
-        )
-        
-        
-        # Calculate the percentiles
-        colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
-        percentiles = [75, 90, 95]
-        percentile_values = np.percentile(minor2_grades, percentiles)
-
-        for percentile, value, color in zip(percentiles, percentile_values, colors):
-            fig2.add_shape(
-                type="line",
-                xref="x",
-                yref="y",
-                x0=value,
-                x1=value,
-                y0=0,
-                y1=max(y),
-                line=dict(color=color, width=2, dash="dash"),
-                name=f"{percentile}th Percentile"
-            )
-        # Update the layout to show the legend
-        fig2.update_layout(showlegend=True)
-        
-        fig3 = go.Figure(data=[go.Histogram(x=minor2_grades)])
-
-
-        fig3.update_layout(
-            title="Histogram for the Minor 2 grades",
-            xaxis_title="Marks",
-            yaxis_title="Frequency"
-        )
-
-        
-        graph_json = fig.to_json()
-        graph2_json = fig2.to_json()
-        graph3_json = fig3.to_json()
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json )
-        
-    
-    
-    elif ('minor1' in check):
-        minor1_grades = []
-        for i in range(len(studentID)):
-            marks = db.reference(path+'/'+studentID[i]).get()
-            minor1_grades.append(marks['minor1'])
-        
-        minor1_df = pd.DataFrame({'Minor1': np.array(minor1_grades)})
-        fig = go.Figure()
-        fig.add_trace(go.Box(y=minor1_df['Minor1'], name="Minor 1"))
-        fig.update_layout(title= "The grade analysis of the course " + course)
-        fig.update_layout(showlegend=True)
-        
-        #Normal Curve 
-        minor1_grades = np.array(minor1_grades)
-        avg_m1 = np.mean(minor1_grades)
-        std = np.std(minor1_grades)
-        
-        
-
-        # # Generate x-axis values
-        x = np.linspace(minor1_grades.min(), minor1_grades.max(), 100)
-        y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
-
-       
-       
-       
-       
-       
-
-        # # Plot the bell curve
-        fig2 = go.Figure(data=go.Scatter(x=x, y=y, mode='lines', name='Bell Curve'))
-        fig2.update_layout(
-            title="The normal distribution analysis of the " + course,
-            xaxis_title='Marks',
-            yaxis_title='Probability Density',
-            showlegend=True
-        )
-        
-        
-        # Calculate the percentiles
-        colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
-        percentiles = [75, 90, 95]
-        percentile_values = np.percentile(minor1_grades, percentiles)
-
-        for percentile, value, color in zip(percentiles, percentile_values, colors):
-            fig2.add_shape(
-                type="line",
-                xref="x",
-                yref="y",
-                x0=value,
-                x1=value,
-                y0=0,
-                y1=max(y),
-                line=dict(color=color, width=2, dash="dash"),
-            )
-
-        # Add invisible scatter traces for legends
-        for percentile, color in zip(percentiles, colors):
-            fig2.add_trace(
-                go.Scatter(
-                    x=[],
-                    y=[],
-                    mode='markers',
-                    marker=dict(color=color, opacity=0),
-                    name=f"{percentile}th Percentile"
-                )
-            )
-
-        fig2.update_layout(showlegend=True)  # Display legends in the graph
-
-        
-        
-        
-        fig3 = go.Figure(data=[go.Histogram(x=minor1_grades)])
-
-
-        fig3.update_layout(
-            title="Histogram for the Minor 1 Grades",
-            xaxis_title="Marks",
-            yaxis_title="Frequency"
-        )
-
-        
-        graph_json = fig.to_json()
-        graph2_json = fig2.to_json()
-        graph3_json = fig3.to_json()
-        
-        
-        
-        
-        
-        
-        #
-        
-        
-        
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json )
-        
-    else:
-        return "Grades have not been uploaded"
-    
-    
-    
-    
-    
-    
-    # return render_template('menu_analytics.html', course = path)
 
 if __name__ == '__main__':
     app.debug = True

@@ -27,6 +27,8 @@ firebase_admin.initialize_app(cred, {
     'databaseURL': "https://se-test-7f7e1-default-rtdb.firebaseio.com"
 })
 
+database=db.reference('Gpa2')
+resources=db.reference('Resources')
 
 @app.after_request
 def add_cache_control(response):
@@ -99,6 +101,8 @@ def login():
         
         try:
             token = sign_in_with_email_and_password(email, password)
+            session['user_id'] = token['localId']
+            session['email'] = email
             # print(token)
 
             if 'error' in token:
@@ -148,6 +152,7 @@ def login():
                         session['branch'] = branch
                         session['username'] = name
                         session['year'] = year
+                        # session['email'] = email
 
                         session['logged_in'] = True
 
@@ -344,7 +349,36 @@ def signup():
 
 @app.route('/grades')
 def grades():
-    return render_template('index_grades.html')
+    if 'user_id' in session:
+        # ... existing code ...
+        print(session)
+        rollNo=extract_roll_number(session['email'])
+        yearBatch=extraction(session['email'])
+        year=yearBatch[0]
+        if yearBatch[1]=='uari' and yearBatch[0]=='20':
+            location = f"20/AI/{rollNo}" 
+            fetch=database.child(location).get()
+            print(fetch)
+        courses = []  # List to store the fetched courses
+        additional_resources = {}  # Dictionary to store additional resources
+        previous_year_papers_link = resources.child('previousYearPapers').get()  # Fetch the previous year papers link
+        
+        for course_key, course_data in fetch.items():
+            course = {
+                'courseName': course_data['courseName'],
+                'courseCredit': course_data['courseCredit'],
+                'score': course_data['gradeGot']
+            }
+            if course_data['gradeGot'] < 4:
+                playlist_key = course_data['courseName']
+                additional_resources[playlist_key] = {
+                    'studyPlaylist': resources.child('Branch').child('AI').child('Sem-3').child(playlist_key).get()
+                }
+            courses.append(course)
+        
+        return render_template('index_grades.html', courses=courses, additional_resources=additional_resources, previous_year_papers_link=previous_year_papers_link)
+    else:
+        return redirect(url_for('login'))
 
 
 
@@ -471,8 +505,49 @@ def faculty_dashboard():
     name = session['faculty_name']
     return render_template('index_faculty_db.html', prof_name = name)
 
+data1={
+    'courseName':'AI3201',
+    'courseCredit':3,
+    "gradeGot":3
+}
 
+data2={
+    'courseName':'AI3202',
+    'courseCredit':3,
+    "gradeGot":2
+}
+
+data3={
+    'courseName':'AI3201',
+    'courseCredit':3,
+    "gradeGot":10
+}
+
+papers={
+    'Previous Year Papers':'https://t.ly/OF1M'
+}
+
+resource_ML={
+    'Study Playlist':"https://shorturl.at/msuTV",
+}
+resource_BD={
+    'Study Playlist':"https://shorturl.at/msuTV",
+}
+resource_SE={
+    'Study Playlist':"https://shorturl.at/msuTV",
+}
+
+#datbase creation and pushing some test data 
+database.child("20").child('AI').child('se20uari001').child('AI2301').set(data1)
+database.child("20").child('AI').child('se20uari001').child('AI2302').set(data2)
+database.child("20").child('AI').child('se20uari001').child('AI2303').set(data3)
+
+#pushing in some resources 
+resources.child('previousYearPapers').set(papers)
+resources.child('Branch').child('AI').child('Sem-3').child('AI2301').set(resource_ML)
+resources.child('Branch').child('AI').child('Sem-3').child('AI2302 ').set(resource_BD)
+resources.child('Branch').child('AI').child('Sem-3').child('AI2303').set(resource_SE)
 
 if __name__ == '__main__':
     app.debug = True
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', port=6969)

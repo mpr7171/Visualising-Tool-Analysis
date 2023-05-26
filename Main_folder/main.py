@@ -37,6 +37,17 @@ def add_cache_control(response):
     response.headers['Expires'] = '0'
     return response
 
+
+def calculate_percentage(scores, your_score):
+        higher_scores = 0
+        for sc in scores:
+            if sc > your_score:
+                higher_scores += 1
+        total_scores = len(scores)
+        percentage = (higher_scores / total_scores) * 100
+        return percentage
+
+
 # Define the Firebase Realtime Database reference
 def extract_roll_number(email):
     if email is None:
@@ -89,6 +100,159 @@ def sign_in_with_email_and_password(email, password, return_secure_token = True)
                     data=payload)
 
     return r.json()
+
+
+def get_analytics_info(year, branch, exam_type):
+
+    path = f'grades/{year}/{branch}'
+    
+    ref1 = db.reference(path)
+
+    no_data = False
+    disp_msg = ""
+
+    data = ref1.get()
+
+    if data == None:
+        data = {}
+        no_data  = True
+        disp_msg = "Please wait untill your respective faculty uploads the scores."
+        
+
+    courses = []
+    course_scores_dic = {}
+
+    curr_user_scores = []
+    curr_user_perc = []
+    graphs = []
+
+    if data == None:
+        return (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc)
+
+    for k in data.keys():
+        courses.append(k)
+        curr_scores = []
+        course_scores = data[k]
+        for rollno in course_scores:    
+
+            c_score = course_scores[rollno]
+            curr_scores.append(c_score)
+
+        course_scores_dic[k] = curr_scores
+
+    num_pres = 0
+    
+    for course in courses:
+        curr_course_scores = course_scores_dic[course]
+
+        curr_marks = []
+
+        cscore = 0  
+
+        flag = False
+
+        for stud in curr_course_scores:
+
+            if exam_type in stud:
+                flag = True
+                curr_marks.append(stud[exam_type])
+
+
+                if stud['student_id'] == session["student_id"]:
+                    curr_user_scores.append(stud[exam_type])
+                    cscore = stud[exam_type]
+            
+                
+        if flag:
+            num_pres += 1
+            curr_user_perc.append(calculate_percentage(your_score=cscore,scores=curr_marks))
+
+            mean = np.mean(curr_marks)
+            std_dev = np.std(curr_marks)
+            x_values = np.linspace(mean - 3 * std_dev, mean + 3 * std_dev, 100)
+            y_values = (1 / (std_dev * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x_values - mean) / std_dev) ** 2)
+
+            percentiles = np.percentile(curr_marks, [50, 75, 90])
+
+            fig = go.Figure()
+            fig = make_subplots(rows=2, cols=1, row_heights=[0.5, 0.4],
+                    subplot_titles=(f"Distrbution of marks across for {course}", "Histogram of marks (in branch)"))
+
+            fig.add_trace(go.Scatter(
+                x=x_values,
+                y=y_values,
+                mode='lines',
+                name='Normal Distribution'
+            ))
+
+            fig.add_trace(go.Scatter(
+                x=[mean, mean],
+                y=[0, np.max(y_values)],
+                mode='lines',
+                name='Mean',
+                line=dict(dash='dash')
+            ))
+
+            fig.add_trace(go.Scatter(
+                x=[np.max(curr_marks), np.max(curr_marks)],
+                y=[0, np.max(y_values)],
+                mode='lines',
+                name='Max score obtained',
+                line=dict(dash='dash')
+            ))
+
+
+            fig.add_trace(go.Scatter(
+                x=[percentiles[2], percentiles[2]],
+                y=[0, np.max(y_values)],
+                mode='lines',
+                name='90th Percentile',
+                line=dict(dash='dash')
+            ))
+
+            fig.add_trace(go.Scatter(
+                x=[cscore, cscore],
+                y=[0, np.max(y_values)],
+                mode='lines',
+                name='Your score',
+                line=dict(dash='solid')
+            ))
+
+            fig.update_layout(
+                title='Normal Distribution with Percentiles',
+                xaxis_title='Marks',
+                yaxis_title='Probability Density'
+            )
+
+            histogram = go.Histogram(
+                x=curr_marks,
+                nbinsx=10,
+                name='Marks Distribution'
+            )
+            fig.update_xaxes(title_text="Marks")
+            fig.update_yaxes(title_text="Frequency")
+
+            fig.add_trace(histogram, row=2, col=1)
+
+            fig.update_layout(
+            title='Histogram of marks',
+            xaxis_title='Marks',
+            yaxis_title='Frequency',
+            height=800, width=1200
+            )
+
+            graph_html = fig.to_html(full_html=False, include_plotlyjs=True)
+            graphs.append(graph_html)
+
+        
+    
+    if num_pres == 0:
+        no_data = True
+
+        disp_msg = "Please wait untill your respective faculty uploads the scores."
+
+    return (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc)
+
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -388,111 +552,76 @@ def analytics():
     year = session['year']
     branch = session['branch']
 
-    # ref = db.reference(f'grades/{year}/{branch}')
+    (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc) = get_analytics_info(year,branch, exam_type='minor1')
+
+    return render_template('index_analytics.html', 
+                        courses=courses,
+                        graphs=graphs,
+                        curr_user_scores = curr_user_scores ,
+                        curr_user_perc = curr_user_perc, 
+                        zip=zip, 
+                        no_data = no_data, disp_msg = disp_msg)
+
+
+
+@app.route('/minor1')
+def minor1():
+    year = session['year']
+    branch = session['branch']
 
     path = f'grades/{year}/{branch}'
     
-    # stud_path = f'{path}/{year}/{branch}'
 
-    ref1 = db.reference(path)
-
-            
-    # ref
-    data = ref1.get()
-
-    print(data)
-
-    courses = []
-    course_scores_dic = {}
-
-    for k in data.keys():
-        courses.append(k)
-        curr_scores = []
-        course_scores = data[k]
-        for rollno in course_scores:
-            c_score = course_scores[rollno]
-            curr_scores.append(c_score)
-
-        course_scores[k] = curr_scores
+    (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc) = get_analytics_info(year,branch, exam_type='minor1')
 
 
+    return render_template('index_analytics.html', 
+                        courses=courses,
+                        graphs=graphs,
+                        curr_user_scores = curr_user_scores ,
+                        curr_user_perc = curr_user_perc, 
+                        zip=zip, 
+                        no_data = no_data, disp_msg = disp_msg)
 
-    # mean = np.mean(marks)
-    # std_dev = np.std(marks)
-    # x_values = np.linspace(mean - 3 * std_dev, mean + 3 * std_dev, 100)
-    # y_values = (1 / (std_dev * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x_values - mean) / std_dev) ** 2)
+@app.route('/minor2')
+def minor2():
+    year = session['year']
+    branch = session['branch']
 
-    # percentiles = np.percentile(marks, [50, 75, 90])
+    path = f'grades/{year}/{branch}'
+    
 
-    # # fig = go.Figure()
-    # fig = make_subplots(rows=2, cols=1, row_heights=[0.5, 0.5],
-    #         subplot_titles=("Distrbution of marks across branch", "Histogram of marks (in branch)"))
-
-    # fig.add_trace(go.Scatter(
-    #     x=x_values,
-    #     y=y_values,
-    #     mode='lines',
-    #     name='Normal Distribution'
-    # ))
-
-    # fig.add_trace(go.Scatter(
-    #     x=[percentiles[0], percentiles[0]],
-    #     y=[0, np.max(y_values)],
-    #     mode='lines',
-    #     name='50th Percentile',
-    #     line=dict(dash='dash')
-    # ))
-
-    # fig.add_trace(go.Scatter(
-    #     x=[percentiles[1], percentiles[1]],
-    #     y=[0, np.max(y_values)],
-    #     mode='lines',
-    #     name='75th Percentile',
-    #     line=dict(dash='dash')
-    # ))
-
-    # fig.add_trace(go.Scatter(
-    #     x=[percentiles[2], percentiles[2]],
-    #     y=[0, np.max(y_values)],
-    #     mode='lines',
-    #     name='90th Percentile',
-    #     line=dict(dash='dash')
-    # ))
-
-    # fig.update_layout(
-    #     title='Normal Distribution with Percentiles',
-    #     xaxis_title='Marks',
-    #     yaxis_title='Probability Density'
-    # )
-
-    # histogram = go.Histogram(
-    #     x=marks,
-    #     nbinsx=10,
-    #     name='Marks Distribution'
-    # )
-    # fig.update_xaxes(title_text="Marks")
-    # fig.update_yaxes(title_text="Frequency")
-
-    # fig.add_trace(histogram, row=2, col=1)
-
-    # class_average_str = "{:.2f}".format(mean)
-
-    # fig.update_layout(
-    #     # title='Histogram of marks',
-    #     # xaxis_title='Marks',
-    #     # yaxis_title='Frequency',
-    #     height=1200, width=1500
-    # )
+    (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc) = get_analytics_info(year,branch, exam_type='minor2')
 
 
+    return render_template('index_analytics_m2.html', 
+                        courses=courses,
+                        graphs=graphs,
+                        curr_user_scores = curr_user_scores ,
+                        curr_user_perc = curr_user_perc, 
+                        zip=zip, 
+                        no_data = no_data, disp_msg = disp_msg)
+
+@app.route('/endsem')
+def endsem():
+    year = session['year']
+    branch = session['branch']
+
+    path = f'grades/{year}/{branch}'
+    
+
+    (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc) = get_analytics_info(year,branch, exam_type='endsem')
 
 
+    return render_template('index_analytics_es.html', 
+                        courses=courses,
+                        graphs=graphs,
+                        curr_user_scores = curr_user_scores ,
+                        curr_user_perc = curr_user_perc, 
+                        zip=zip, 
+                        no_data = no_data, disp_msg = disp_msg)
 
-
-    return render_template('index_analytics.html')
-
-
-
+    
 
 
 @app.route('/faculty_dashboard')
@@ -503,6 +632,8 @@ def faculty_dashboard():
         return redirect('/')
 
     name = session['faculty_name']
+
+
     return render_template('index_faculty_db.html', prof_name = name)
 
 data1={

@@ -3,30 +3,48 @@
 <head>
     <title>Analytics</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    
+    <style>
+        .container {
+            margin-bottom: 20px;
+            border: 1px solid black;
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
-    <div id="graph">
-
+    <h3> </h3>
+    <div class="container">
+        <div id="graph1"></div>
         <script>
             // Retrieve the graph JSON data from Flask
             var graphJsonData = '{{ graph_json | safe }}';
             var graphData = JSON.parse(graphJsonData);
 
             // Render the graph using Plotly
-            Plotly.newPlot('graph', graphData.data, graphData.layout);
+            Plotly.newPlot('graph1', graphData.data, graphData.layout);
         </script>
     </div>
-
-
-    <div id = "bell"> 
+    <h3> </h3>
+    <div class="container">
+        <div id="graph2"></div>
         <script>
             // Retrieve the graph JSON data from Flask
             var graphJsonData2 = '{{ graph2_json | safe }}';
             var graphData2 = JSON.parse(graphJsonData2);
 
             // Render the graph using Plotly
-            Plotly.newPlot('graph', graphData2.data, graphData2.layout);
+            Plotly.newPlot('graph2', graphData2.data, graphData2.layout);
+        </script>
+    </div>
+    <div class="container">
+        <div id="graph3"></div>
+        <script>
+            // Retrieve the graph JSON data from Flask
+            var graphJsonData3 = '{{ graph3_json | safe }}';
+            var graphData3 = JSON.parse(graphJsonData3);
+
+            // Render the graph using Plotly
+            Plotly.newPlot('graph3', graphData3.data, graphData3.layout);
         </script>
     </div>
 </body>

@@ -1,6 +1,93 @@
 <!-- index.html -->
 <!DOCTYPE html>
 <html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f2f2f2;
+      }
+    
+      h1 {
+        text-align: center;
+        color: #333;
+      }
+    
+      form {
+        max-width: 400px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+    
+      label {
+        display: block;
+        font-weight: bold;
+        margin-top: 10px;
+      }
+    
+      input[type="text"],
+      select {
+        width: 100%;
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+      }
+    
+      input[type="file"] {
+        width: 100%;
+        padding: 8px;
+      }
+    
+      input[type="submit"] {
+        background-color: #4CAF50;
+        color: white;
+        padding: 12px 32px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-top: 20px;
+        transition: background-color 0.3s ease;
+        display: block;
+        margin: 0 auto;
+        width: 200px;
+      }
+    
+      input[type="submit"]:hover {
+        background-color: #45a049;
+      }
+    
+      h3 {
+        margin-top: 20px;
+        font-size: 18px;
+      }
+    
+      ul {
+        margin-top: 10px;
+        margin-bottom: 10px;
+      }
+    
+      ul li {
+        margin-bottom: 10px;
+      }
+    
+      p {
+        margin: 0;
+      }
+    
+      span {
+        font-weight: bold;
+      }
+    
+      i {
+        font-style: italic;
+      }
+    </style>
+    
+  </head>
   <body>
     <h1>Upload Grades</h1>
     <form method="POST" action="/process" enctype="multipart/form-data">
@@ -17,13 +104,14 @@
         <option value="endsem">End Semester</option>
       </select><br><br>
 
-      <h3> File Naming Format </h3>
-      <h4> Your file name should be in the format subject_code_exam only.</h4>
-      <h4> Make sure that the csv file is of the type "Microsoft Excel Comma separated values" </h5>
-      <h4> For example : AI3101_M1 </h4>      
       <label for="file">CSV File:</label>
       <input type="file" id="file" name="file"><br><br>
-      
+
+      <h3> Instructions </h3>
+      <ul>
+        <li><p>Please follow <span style="font-weight: bold;": normal;"><i>subjectcode_exam</i></span> as the naming convention for the file <br> <br> For example : AI3101_M1</p></li>
+        <li><p> Please upload a Microsoft Excel Comma Separated Values file only</p></li>
+      </ul>
       <input type="submit" value="Submit">
       
     </form>

@@ -1091,7 +1091,7 @@ def menu_analytics():
     
     presence = db.reference(path+'/'+studentID[0]).get()
     check = list(presence.keys())
-    
+   
     
 
     
@@ -1104,10 +1104,12 @@ def menu_analytics():
         end_sem_grades = []
         for i in range(len(studentID)):
             marks = db.reference(path+'/'+studentID[i]).get()
-            if(marks['minor1'] == None):
+            if('minor1' not in list(marks.keys())):
                 return "Minor 1 grades have not been uploaded. Please upload Minor1 grades"
-            elif (marks['minor2'] == None):
+    
+            if('minor2' not in list(marks.keys())):
                 return "Minor 2 grades have not been uploaded. Please upload Minor2 grades"
+    
             
             minor1_grades.append(marks['minor1'])
             minor2_grades.append(marks['minor2'])

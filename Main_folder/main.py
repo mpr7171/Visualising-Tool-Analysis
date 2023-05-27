@@ -1063,10 +1063,304 @@ def faculty_dashboard():
     return render_template('index_faculty_db.html', prof_name = name, course_list = course_list, course_names = course_names)
 
 
+## need to make changes for faculty database
+@app.route('/menu_analytics')
+def menu_analytics():
+    database_url = 'https://se-test-7f7e1-default-rtdb.firebaseio.com/'
+    course = request.args.get('course')
+    
+    #Temporarily assigning the batch and branch, will change it later
+    
+    batch = '19'
+    branch = 'AI'
+    path = 'grades/' + batch + '/' +branch + '/' + course
+    
+    
+    
+    
+    data = db.reference(path).get()
+    if data == None:
+        return render_template('failure.html')
+    
+    
+    studentID = list(data.keys())
+    
+    
+    
+    
+    
+    presence = db.reference(path+'/'+studentID[0]).get()
+    check = list(presence.keys())
+    
+    
+
+    
+    
+    
+    
+    if ('endsem' in check):
+        minor1_grades = []
+        minor2_grades = []
+        end_sem_grades = []
+        for i in range(len(studentID)):
+            marks = db.reference(path+'/'+studentID[i]).get()
+            if(marks['minor1'] == None):
+                return "Minor 1 grades have not been uploaded. Please upload Minor1 grades"
+            elif (marks['minor2'] == None):
+                return "Minor 2 grades have not been uploaded. Please upload Minor2 grades"
+            
+            minor1_grades.append(marks['minor1'])
+            minor2_grades.append(marks['minor2'])
+            end_sem_grades.append(marks['endsem'])
+            
+        minor1_grades = np.array(minor1_grades)
+        minor2_grades = np.array(minor2_grades)
+        end_sem_grades = np.array(end_sem_grades)
+        avg_m1 = np.mean(minor1_grades)
+        avg_m2 = np.mean(minor2_grades)
+        avg_endsem = np.mean(end_sem_grades)
+        minor1_df = pd.DataFrame({'Minor1': np.array(minor1_grades)})
+        minor2_df = pd.DataFrame({'Minor2': np.array(minor2_grades)})
+        endsem_df = pd.DataFrame({'End Sem': np.array(end_sem_grades)})
+        fig = go.Figure()
+        fig.add_trace(go.Box(y=minor1_df['Minor1'], name="Minor 1"))
+        fig.add_trace(go.Box(y=minor2_df['Minor2'], name="Minor 2"))
+        fig.add_trace(go.Box(y=endsem_df['End Sem'], name="End Semester"))
+        fig.update_layout(showlegend=True)
+        
+        std = np.std(end_sem_grades)
+        x = np.linspace(end_sem_grades.min(), end_sem_grades.max(), 100)
+        y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
+        fig2 = go.Figure(data=go.Scatter(x=x, y=y, mode='lines', name='Normal dist'))
+        fig2.update_layout(
+            title="The normal distribution  analysis of the " + course,
+            xaxis_title='Marks',
+            yaxis_title='Probability Density',
+            showlegend=True
+        )
+        
+        # Calculate the percentiles
+        colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
+        percentiles = [75, 90, 95]
+        percentile_values = np.percentile(end_sem_grades, percentiles)
+
+        for percentile, value, color in zip(percentiles, percentile_values, colors):
+            fig2.add_shape(
+                type="line",
+                xref="x",
+                yref="y",
+                x0=value,
+                x1=value,
+                y0=0,
+                y1=max(y),
+                line=dict(color=color, width=2, dash="dash"),
+                name=f"{percentile}th Percentile"
+            )
+        # Update the layout to show the legend
+        fig2.update_layout(showlegend=True)
+        
+        
+        fig3 = go.Figure(data=[go.Histogram(x=end_sem_grades)])
 
 
+        fig3.update_layout(
+            title="Histogram of the End Sem Grades",
+            xaxis_title="Marks",
+            yaxis_title="Frequency"
+        )
+        
+        graph_json = fig.to_json()
+        graph2_json = fig2.to_json()
+        graph3_json = fig3.to_json()
+        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json )
+        
+    
+    
+    
+    elif ('minor2' in check):
+        minor1_grades = []
+        minor2_grades = []
+        for i in range(len(studentID)):
+            
+            marks = db.reference(path+'/'+studentID[i]).get()
+            
+            
+            if('minor1' not in list(marks.keys())):
+                return "Minor 1 grades have not been uploaded. Please upload Minor1 grades"
+            
+            
+            
+            minor1_grades.append(marks['minor1'])
+            minor2_grades.append(marks['minor2'])
+        minor1_grades = np.array(minor1_grades)
+        minor2_grades = np.array(minor2_grades)
+        avg_m1 = np.mean(minor1_grades)
+        avg_m2 = np.mean(minor2_grades)
+        minor1_df = pd.DataFrame({'Minor1': np.array(minor1_grades)})
+        minor2_df = pd.DataFrame({'Minor2': np.array(minor2_grades)})
+        fig = go.Figure()
+        fig.add_trace(go.Box(y=minor1_df['Minor1'], name="Minor 1"))
+        fig.add_trace(go.Box(y=minor2_df['Minor2'], name="Minor 2"))
+        fig.update_layout(showlegend=True)
+        
+        
+        
+        std = np.std(minor2_grades)
+        x = np.linspace(minor2_grades.min(), minor2_grades.max(), 100)
+        y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
+        fig2 = go.Figure(data=go.Scatter(x=x, y=y, mode='lines', name='Bell Curve'))
+        fig2.update_layout(
+            title="The normal distribution analysis of the course " + course,
+            xaxis_title='Marks',
+            yaxis_title='Probability Density',
+            showlegend=True
+        )
+        
+        
+        # Calculate the percentiles
+        colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
+        percentiles = [75, 90, 95]
+        percentile_values = np.percentile(minor2_grades, percentiles)
+
+        for percentile, value, color in zip(percentiles, percentile_values, colors):
+            fig2.add_shape(
+                type="line",
+                xref="x",
+                yref="y",
+                x0=value,
+                x1=value,
+                y0=0,
+                y1=max(y),
+                line=dict(color=color, width=2, dash="dash"),
+                name=f"{percentile}th Percentile"
+            )
+        # Update the layout to show the legend
+        fig2.update_layout(showlegend=True)
+        
+        fig3 = go.Figure(data=[go.Histogram(x=minor2_grades)])
 
 
+        fig3.update_layout(
+            title="Histogram for the Minor 2 grades",
+            xaxis_title="Marks",
+            yaxis_title="Frequency"
+        )
+
+        
+        graph_json = fig.to_json()
+        graph2_json = fig2.to_json()
+        graph3_json = fig3.to_json()
+        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json )
+        
+    
+    
+    elif ('minor1' in check):
+        minor1_grades = []
+        for i in range(len(studentID)):
+            marks = db.reference(path+'/'+studentID[i]).get()
+            minor1_grades.append(marks['minor1'])
+        
+        minor1_df = pd.DataFrame({'Minor1': np.array(minor1_grades)})
+        fig = go.Figure()
+        fig.add_trace(go.Box(y=minor1_df['Minor1'], name="Minor 1"))
+        fig.update_layout(title= "The grade analysis of the course " + course)
+        fig.update_layout(showlegend=True)
+        
+        #Normal Curve 
+        minor1_grades = np.array(minor1_grades)
+        avg_m1 = np.mean(minor1_grades)
+        std = np.std(minor1_grades)
+        
+        
+
+        # # Generate x-axis values
+        x = np.linspace(minor1_grades.min(), minor1_grades.max(), 100)
+        y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
+
+       
+       
+       
+       
+       
+
+        # # Plot the bell curve
+        fig2 = go.Figure(data=go.Scatter(x=x, y=y, mode='lines', name='Bell Curve'))
+        fig2.update_layout(
+            title="The normal distribution analysis of the " + course,
+            xaxis_title='Marks',
+            yaxis_title='Probability Density',
+            showlegend=True
+        )
+        
+        
+        # Calculate the percentiles
+        colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
+        percentiles = [75, 90, 95]
+        percentile_values = np.percentile(minor1_grades, percentiles)
+
+        for percentile, value, color in zip(percentiles, percentile_values, colors):
+            fig2.add_shape(
+                type="line",
+                xref="x",
+                yref="y",
+                x0=value,
+                x1=value,
+                y0=0,
+                y1=max(y),
+                line=dict(color=color, width=2, dash="dash"),
+            )
+
+        # Add invisible scatter traces for legends
+        for percentile, color in zip(percentiles, colors):
+            fig2.add_trace(
+                go.Scatter(
+                    x=[],
+                    y=[],
+                    mode='markers',
+                    marker=dict(color=color, opacity=0),
+                    name=f"{percentile}th Percentile"
+                )
+            )
+
+        fig2.update_layout(showlegend=True)  # Display legends in the graph
+
+        
+        
+        
+        fig3 = go.Figure(data=[go.Histogram(x=minor1_grades)])
+
+
+        fig3.update_layout(
+            title="Histogram for the Minor 1 Grades",
+            xaxis_title="Marks",
+            yaxis_title="Frequency"
+        )
+
+        
+        graph_json = fig.to_json()
+        graph2_json = fig2.to_json()
+        graph3_json = fig3.to_json()
+        
+        
+        
+        
+        
+        
+        #
+        
+        
+        
+        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json )
+        
+    else:
+        return "Grades have not been uploaded"
+    
+    
+    
+    
+    
+    
+    # return render_template('menu_analytics.html', course = path)
 
 if __name__ == '__main__':
     app.debug = True

@@ -131,6 +131,7 @@
                                 <th>Year</th>
                                 <th>Semester</th>
                                 <th>Action</th>
+                                <th>Analysis</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -146,6 +147,13 @@
                                             window.location.href = "/upload";
                                         }
                                     </script>
+                                    <td><button onclick = "redirectToAnalyticsPage(('{{ course_list[index] }}'))" class = "analysisbtn"> View Analysis </button> </td>
+                                    <script>
+                                        function redirectToAnalyticsPage(courseName) {
+                                            window.location.href = "/menu_analytics?course=" + encodeURIComponent(courseName);
+                                        }
+                                    </script>
+                                    
                                 </tr>
                             {% endfor %}
                         </tbody>

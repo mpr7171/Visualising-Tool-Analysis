@@ -54,48 +54,56 @@
             <div class="cardheader">
               <h2>Current Courses</h2>
             </div>
-            <table id="gradetable">
-              <thead>
-                <tr class="row-height">
-                  <td>Course Name</td>
-                  <td>Course Credits</td>
-                  <td>Score</td>
-                </tr>
-              </thead>
-              <tbody>
-                {% for course in courses %}
-                <tr>
-                  <td>{{ course.courseName }}</td>
-                  <td>{{ course.courseCredit }}</td>
-                  <td>{{ course.score }}</td>
-                
-                {% endfor %}
-              </tbody>
-            </table>
-
+            {% if courses %}
+              <table id="gradetable">
+                <thead>
+                  <tr class="row-height">
+                    <td>Course Name</td>
+                    <td>Course Credits</td>
+                    <td>Score</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for course in courses %}
+                    <tr>
+                      <td>{{ course.courseName }}</td>
+                      <td>{{ course.courseCredit }}</td>
+                      <td>{{ course.score }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            {% else %}
+              <div class="no-entries-message">No entries found in the database. Please contact the maintainer of the site</div>
+            {% endif %}
+        
             <div class="additional-resources">
-              <div class="betterluck">Good Try. You can always try again</div>
-              <div class="resourcestext">Below are some resources that can help you prepare better next time</div>
-              {% if previous_year_papers_link %}
-              <div class="previous-year-papers">
-                <a href="{{ previous_year_papers_link }}">Previous Year Papers</a>
-              </div>
-              {% endif %}
-              {% if additional_resources %}
-              <ul>
-                {% for playlist_key, resources_dict in additional_resources.items() %}
-                <li>
-                  <strong>{{ playlist_key }}</strong>
+              {% if courses %}
+                {% if courses|selectattr('score', 'lt', 4)|list %}
+                  <div class="betterluck">Good Try. You can always try again</div>
+                  <div class="resourcestext">Below are some resources that can help you prepare better next time</div>
+                  {% if previous_year_papers_link %}
+                    <div class="previous-year-papers">
+                      <a href="{{ previous_year_papers_link }}">Previous Year Papers</a>
+                    </div>
+                  {% endif %}
+                {% endif %}
+                {% if additional_resources %}
                   <ul>
-                    {% if 'studyPlaylist' in resources_dict %}
-                    <li>
-                      <a href="{{ resources_dict['studyPlaylist'] }}">Study Playlist</a>
-                    </li>
-                    {% endif %}
+                    {% for playlist_key, resources_dict in additional_resources.items() %}
+                      <li>
+                        <strong>{{ playlist_key }}</strong>
+                        <ul>
+                          {% if 'studyPlaylist' in resources_dict %}
+                            <li>
+                              <a href="{{ resources_dict['studyPlaylist'] }}">Study Playlist</a>
+                            </li>
+                          {% endif %}
+                        </ul>
+                      </li>
+                    {% endfor %}
                   </ul>
-                </li>
-                {% endfor %}
-              </ul>
+                {% endif %}
               {% endif %}
             </div>
           </div>

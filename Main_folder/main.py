@@ -509,25 +509,38 @@ def signup():
             flash(error)
             return render_template('signup.html', error=error)
 
-
-
-
 @app.route('/grades')
 def grades():
     if 'user_id' in session:
-        # ... existing code ...
-        print(session)
-        rollNo=extract_roll_number(session['email'])
-        yearBatch=extraction(session['email'])
-        year=yearBatch[0]
-        if yearBatch[1]=='uari' and yearBatch[0]=='20':
-            location = f"20/AI/{rollNo}" 
-            fetch=database.child(location).get()
-            print(fetch)
+        # Existing code for user authentication and session handling...
+
+        # Extract roll number and year batch from session's email
+        rollNo = extract_roll_number(session['email'])
+        yearBatch = extraction(session['email'])
+        year = yearBatch[0]
+
+        # Fetch grades based on the year batch and branch
+        if yearBatch[1] == 'uari':
+            location = f"{year}/AI/{rollNo}"
+            fetch = database.child(location).get()
+        
+        if yearBatch[1] == 'ucse':
+            location = f"{year}/CSE/{rollNo}"
+            fetch = database.child(location).get()
+        
+        if yearBatch[1] == 'ueee':
+            location = f"{year}/EEE/{rollNo}"
+            fetch = database.child(location).get()
+
+        # If no grades are found, render template with empty data
+        if not fetch:
+            return render_template('index_grades.html', courses=[], additional_resources={}, previous_year_papers_link=None)
+
         courses = []  # List to store the fetched courses
         additional_resources = {}  # Dictionary to store additional resources
         previous_year_papers_link = resources.child('previousYearPapers').get()  # Fetch the previous year papers link
-        
+
+        # Process the fetched courses and their grades
         for course_key, course_data in fetch.items():
             course = {
                 'courseName': course_data['courseName'],
@@ -535,17 +548,18 @@ def grades():
                 'score': course_data['gradeGot']
             }
             if course_data['gradeGot'] < 4:
+                # Fetch study playlist for courses with a score less than 4
                 playlist_key = course_data['courseName']
                 additional_resources[playlist_key] = {
                     'studyPlaylist': resources.child('Branch').child('AI').child('Sem-3').child(playlist_key).get()
                 }
             courses.append(course)
-        
+
+        # Render template with the processed data
         return render_template('index_grades.html', courses=courses, additional_resources=additional_resources, previous_year_papers_link=previous_year_papers_link)
     else:
+        # Redirect to login page if user not authenticated
         return redirect(url_for('login'))
-
-
 
 @app.route('/analytics')
 def analytics():

@@ -439,3 +439,15 @@ list-style-type: none;
 .additional-resources li a:hover {
   text-decoration: underline;
 }
+
+.no-entries-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 500px;
+  text-align: center;
+  background-color: #f2f2f2;
+  color: #555;
+  font-size: 18px;
+  font-weight: bold;
+}

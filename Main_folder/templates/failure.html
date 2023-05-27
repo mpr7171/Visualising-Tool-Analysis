@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Failure Page</title>
+    <style>
+        body {
+            background-color: #1A1A1A;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 48px;
+            color: #FFFFFF;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 24px;
+            color: #CCCCCC;
+            margin-bottom: 40px;
+        }
+
+        img {
+            width: 200px;
+            height: 200px;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #333333;
+            color: #FFFFFF;
+            font-size: 18px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #444444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="{{url_for('static', filename='404_failure_img/fail.png')}}" alt="Failure">
+        <h1>No Data Found!</h1>
+        <p>Please Upload the marks to view the analytics.</p>
+       
+        <td><button onclick = "redirectToHomePage()" class="button">Go Back Home</button></td>
+                <script>
+                    function redirectToHomePage(){
+                        window.location.href = "/faculty_dashboard";
+                    }
+                </script>
+    </div>
+</body>
+</html>

@@ -31,6 +31,78 @@
     </div>
     <div class="content">
       <!-- Your scrollable content goes here -->
+      <div class="container">
+
+      <!--main-->
+      <div class="main">
+        <div class="topbar">
+          <div class="toggle">
+            <ion-icon name="menu-outline"></ion-icon>
+          </div>
+          <div class="user">
+            <img
+              src="{{url_for('static', filename='img_fac_dashb/profile_icon.png')}}"
+              alt="XXXX"
+            />
+          </div>
+        </div>
+
+        
+        <!-- Course Detail List-->
+        <div class="details">
+          <div class="courses">
+            <div class="cardheader">
+              <h2>Current Courses</h2>
+            </div>
+            <table id="gradetable">
+              <thead>
+                <tr class="row-height">
+                  <td>Course Name</td>
+                  <td>Course Credits</td>
+                  <td>Score</td>
+                </tr>
+              </thead>
+              <tbody>
+                {% for course in courses %}
+                <tr>
+                  <td>{{ course.courseName }}</td>
+                  <td>{{ course.courseCredit }}</td>
+                  <td>{{ course.score }}</td>
+                
+                {% endfor %}
+              </tbody>
+            </table>
+
+            <div class="additional-resources">
+              <div class="betterluck">Good Try. You can always try again</div>
+              <div class="resourcestext">Below are some resources that can help you prepare better next time</div>
+              {% if previous_year_papers_link %}
+              <div class="previous-year-papers">
+                <a href="{{ previous_year_papers_link }}">Previous Year Papers</a>
+              </div>
+              {% endif %}
+              {% if additional_resources %}
+              <ul>
+                {% for playlist_key, resources_dict in additional_resources.items() %}
+                <li>
+                  <strong>{{ playlist_key }}</strong>
+                  <ul>
+                    {% if 'studyPlaylist' in resources_dict %}
+                    <li>
+                      <a href="{{ resources_dict['studyPlaylist'] }}">Study Playlist</a>
+                    </li>
+                    {% endif %}
+                  </ul>
+                </li>
+                {% endfor %}
+              </ul>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+      
       
     </div>
   </div>

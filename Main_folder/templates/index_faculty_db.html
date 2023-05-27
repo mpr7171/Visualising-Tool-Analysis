@@ -126,49 +126,36 @@
                     <table>
                         <thead>
                             <tr>
-                                <td>Course Name</td>
-                                <td>Course Code</td>
-                                <td>Batch</td>
-                                <td>Credits</td>
-                                <td>Student Scores</td>
+                                <th>Course Name</th>
+                                <th>Course List</th>
+                                <th>Year</th>
+                                <th>Semester</th>
+                                <th>Action</th>
+                                <th>Analysis</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Software Engineering</td>
-                                <td>CS1111</td>
-                                <td>2020</td>
-                                <td>4</td>
-                                <td><button class="uploadbtn">Upload</button></td>
-                            </tr>
-                            <tr>
-                                <td>Software Engineering</td>
-                                <td>CS1111</td>
-                                <td>2020</td>
-                                <td>4</td>
-                                <td><button class="uploadbtn">Upload</button></td>
-                            </tr>
-                            <tr>
-                                <td>Software Engineering</td>
-                                <td>CS1111</td>
-                                <td>2020</td>
-                                <td>4</td>
-                                <td><button class="uploadbtn">Upload</button></td>
-                            </tr>
-                            <tr>
-                                <td>Software Engineering</td>
-                                <td>CS1111</td>
-                                <td>2020</td>
-                                <td>4</td>
-                                <td><button class="uploadbtn">Upload</button></td>
-                            </tr>
-                            <tr>
-                                <td>Software Engineering</td>
-                                <td>CS1111</td>
-                                <td>2020</td>
-                                <td>4</td>
-                                <td><button class="uploadbtn">Upload</button></td>
-                            </tr>
+                            {% for index in range(course_names|length) %}
+                                <tr>
+                                    <td>{{ course_names[index] }}</td>
+                                    <td>{{ course_list[index] }}</td>
+                                    <td>2020</td>
+                                    <td>4</td>
+                                    <td><button onclick = "redirectToUploadPage()" class="uploadbtn">Upload Grades</button></td>
+                                    <script>
+                                        function redirectToUploadPage(){
+                                            window.location.href = "/upload";
+                                        }
+                                    </script>
+                                    <td><button onclick = "redirectToAnalyticsPage(('{{ course_list[index] }}'))" class = "analysisbtn"> View Analysis </button> </td>
+                                    <script>
+                                        function redirectToAnalyticsPage(courseName) {
+                                            window.location.href = "/menu_analytics?course=" + encodeURIComponent(courseName);
+                                        }
+                                    </script>
+                                    
+                                </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>

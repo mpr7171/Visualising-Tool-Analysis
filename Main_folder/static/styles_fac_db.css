@@ -124,6 +124,14 @@ body{
     pointer-events: none;
 }
 
+.heading {
+    white-space: nowrap; /* Prevent text from wrapping */
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    /* overflow: hidden; Hide any overflow */
+    /* text-overflow: ellipsis; Show ellipsis (...) for overflowed text */
+  }
+  
+
 /* main*/
 .main{
     position: absolute;
@@ -326,5 +334,29 @@ body{
 }
 
 .uploadbtn:active {
+    background-color: #ffbf00;
+}
+
+.analysisbtn {
+    position: relative;
+    background-color:#0a0a23;
+    color: #fff;
+    border:none; 
+    border-radius:10px; 
+    padding:15px;
+}
+
+.analysisbtn:hover {
+    background-color:#002ead;
+    transition: 0.7s;
+}
+
+.analysisbtn:focus {
+    outline-color: transparent;
+    outline-style:solid;
+    box-shadow: 0 0 0 4px #5a01a7;
+}
+
+.analysisbtn:active {
     background-color: #ffbf00;
 }

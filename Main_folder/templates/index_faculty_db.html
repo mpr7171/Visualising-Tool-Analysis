@@ -140,7 +140,7 @@
                                 <tr>
                                     <td>{{ course_names[index] }}</td>
                                     <td>{{ course_list[index] }}</td>
-                                    <td>2020</td>
+                                    <td>{{batch[index]}}</td>
                                     <td>4</td>
                                     <td><button onclick = "redirectToUploadPage()" class="uploadbtn">Upload Grades</button></td>
                                     <script>
@@ -155,10 +155,9 @@
 
 
                                     </script>
-                                    <td><button onclick = "redirectToAnalyticsPage(('{{ course_list[index] }}'))" class = "analysisbtn"> View Analysis </button> </td>
-                                    <script>
-                                        function redirectToAnalyticsPage(courseName) {
-                                            window.location.href = "/menu_analytics?course=" + encodeURIComponent(courseName);
+                                    <td><button onclick="redirectToAnalyticsPage('{{ course_list[index] }}', '{{ batch[index] }}')" class="analysisbtn">View Analysis</button></td>                                    <script>
+                                        function redirectToAnalyticsPage(courseName, batchValue) {
+                                            window.location.href = "/menu_analytics?course=" + encodeURIComponent(courseName) + "&batch=" + encodeURIComponent(batchValue);
                                         }
 
                                         

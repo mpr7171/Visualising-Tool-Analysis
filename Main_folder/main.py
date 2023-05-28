@@ -23,7 +23,7 @@ app.secret_key = '666'
 auth = firebase_admin.auth
 
 app.secret_key='secret'
-cred = credentials.Certificate("se-test-7f7e1-firebase-adminsdk-auhlb-6adf0cbd2c.json")
+cred = credentials.Certificate("Main_folder\\se-test-7f7e1-firebase-adminsdk-auhlb-6adf0cbd2c.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': "https://se-test-7f7e1-default-rtdb.firebaseio.com"
 })
@@ -603,18 +603,38 @@ def minor2():
     year = session['year']
     branch = session['branch']
 
-    courses = []
-    course_scores_dic = {}
+    path = f'grades/{year}/{branch}'
+    
 
-    for k in data.keys():
-        courses.append(k)
-        curr_scores = []
-        course_scores = data[k]
-        for rollno in course_scores:
-            c_score = course_scores[rollno]
-            curr_scores.append(c_score)
+    (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc) = get_analytics_info(year,branch, exam_type='minor2')
 
-        course_scores[k] = curr_scores
+
+    return render_template('index_analytics_m2.html', 
+                        courses=courses,
+                        graphs=graphs,
+                        curr_user_scores = curr_user_scores ,
+                        curr_user_perc = curr_user_perc, 
+                        zip=zip, 
+                        no_data = no_data, disp_msg = disp_msg)
+
+@app.route('/endsem')
+def endsem():
+    year = session['year']
+    branch = session['branch']
+
+    path = f'grades/{year}/{branch}'
+    
+
+    (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc) = get_analytics_info(year,branch, exam_type='endsem')
+
+
+    return render_template('index_analytics_es.html', 
+                        courses=courses,
+                        graphs=graphs,
+                        curr_user_scores = curr_user_scores ,
+                        curr_user_perc = curr_user_perc, 
+                        zip=zip, 
+                        no_data = no_data, disp_msg = disp_msg)
 
 
 
@@ -994,8 +1014,12 @@ def upload_to_database(batch, exam_type, file):
     branch = subject_code[:2]
     
     
+    if len(batch)>2:
+        batch = batch[2:]
+
     
     
+        
     path = 'grades/'+ batch + '/' + branch + '/' + subject_code 
     
   
@@ -1109,14 +1133,29 @@ def faculty_dashboard():
     courses = db.reference(path).get()
     course_list = list(courses.keys())
     course_names = []
+    
     for i in range(len(course_list)):
         c_name = db.reference('course_names/'+course_list[i]+'/course_name').get()
         course_names.append(c_name)
         
+    temp_b = db.reference('faculty/' + db_name + '/Courses').get()
+    batch = []
+    keys = list(temp_b.keys())
+
+    for i in range(len(keys)):
+        batch.append(db.reference('faculty/ragava_reddy/Courses/' + keys[i]).get())
+        
+        
+        
+    
+        
+        
     
         
     
-    return render_template('index_faculty_db.html', prof_name = name, course_list = course_list, course_names = course_names)
+        
+    
+    return render_template('index_faculty_db.html', prof_name = name, course_list = course_list, course_names = course_names, batch = batch)
 
 
 ## need to make changes for faculty database
@@ -1124,11 +1163,14 @@ def faculty_dashboard():
 def menu_analytics():
     database_url = 'https://se-test-7f7e1-default-rtdb.firebaseio.com/'
     course = request.args.get('course')
-    
+    batch = request.args.get('batch')
+    branch = course[:2]
     #Temporarily assigning the batch and branch, will change it later
     
-    batch = '19'
-    branch = 'AI'
+    if len(batch)>2:
+        batch = batch[2:]
+        
+    
     path = 'grades/' + batch + '/' +branch + '/' + course
     
     
@@ -1227,11 +1269,120 @@ def menu_analytics():
             yaxis_title="Frequency"
         )
         
+        
+        
+        
+        
+        
+        std = np.std(minor2_grades)
+        x = np.linspace(minor2_grades.min(), minor2_grades.max(), 100)
+        y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
+        fig4 = go.Figure(data=go.Scatter(x=x, y=y, mode='lines', name='Normal dist'))
+        fig4.update_layout(
+            title="The normal distribution analysis of the " + course,
+            xaxis_title='Marks',
+            yaxis_title='Probability Density',
+            showlegend=True
+        )
+        
+        
+        percentile_values = np.percentile(minor2_grades, percentiles)
+
+        for percentile, value, color in zip(percentiles, percentile_values, colors):
+            fig4.add_shape(
+                type="line",
+                xref="x",
+                yref="y",
+                x0=value,
+                x1=value,
+                y0=0,
+                y1=max(y),
+                line=dict(color=color, width=2, dash="dash"),
+                name=f"{percentile}th Percentile"
+            )
+        # Update the layout to show the legend
+        fig4.update_layout(showlegend=True)
+        
+        
+        
+        
+        
+        std = np.std(minor1_grades)
+        x = np.linspace(minor1_grades.min(), minor1_grades.max(), 100)
+        y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
+        fig5 = go.Figure(data=go.Scatter(x=x, y=y, mode='lines', name='Normal dist'))
+        fig5.update_layout(
+            title="The normal distribution analysis of the " + course,
+            xaxis_title='Marks',
+            yaxis_title='Probability Density',
+            showlegend=True
+        )
+        
+        
+        percentile_values = np.percentile(minor1_grades, percentiles)
+
+        for percentile, value, color in zip(percentiles, percentile_values, colors):
+            fig5.add_shape(
+                type="line",
+                xref="x",
+                yref="y",
+                x0=value,
+                x1=value,
+                y0=0,
+                y1=max(y),
+                line=dict(color=color, width=2, dash="dash"),
+                name=f"{percentile}th Percentile"
+            )
+        # Update the layout to show the legend
+        fig5.update_layout(showlegend=True)
+        
+        fig6 = go.Figure(data=[go.Histogram(x=minor1_grades)])
+
+
+        fig6.update_layout(
+            title="Histogram of the Minor1 Grades",
+            xaxis_title="Marks",
+            yaxis_title="Frequency"
+        )
+        
+        fig7= go.Figure(data=[go.Histogram(x=minor2_grades)])
+
+
+        fig7.update_layout(
+            title="Histogram of the Minor2 Grades",
+            xaxis_title="Marks",
+            yaxis_title="Frequency"
+        )
+        
+        
         graph_json = fig.to_json()
         graph2_json = fig2.to_json()
         graph3_json = fig3.to_json()
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json )
+        graph4_json = fig4.to_json()
+        graph5_json = fig5.to_json()
+        graph6_json = fig6.to_json()
+        graph7_json = fig7.to_json()
+        return render_template('menu_grades.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json , graph4_json = graph4_json,
+                               graph5_json = graph5_json, graph6_json = graph6_json, graph7_json = graph7_json, type = "end_sem")
         
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
@@ -1304,12 +1455,62 @@ def menu_analytics():
             yaxis_title="Frequency"
         )
 
+        std = np.std(minor1_grades)
+        x = np.linspace(minor1_grades.min(), minor1_grades.max(), 100)
+        y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
+        fig5 = go.Figure(data=go.Scatter(x=x, y=y, mode='lines', name='Normal dist'))
+        fig5.update_layout(
+            title="The normal distribution analysis of the " + course,
+            xaxis_title='Marks',
+            yaxis_title='Probability Density',
+            showlegend=True
+        )
+        
+        
+        percentile_values = np.percentile(minor1_grades, percentiles)
+
+        for percentile, value, color in zip(percentiles, percentile_values, colors):
+            fig5.add_shape(
+                type="line",
+                xref="x",
+                yref="y",
+                x0=value,
+                x1=value,
+                y0=0,
+                y1=max(y),
+                line=dict(color=color, width=2, dash="dash"),
+                name=f"{percentile}th Percentile"
+            )
+        # Update the layout to show the legend
+        fig5.update_layout(showlegend=True)
+        
+        fig6 = go.Figure(data=[go.Histogram(x=minor1_grades)])
+
+
+        fig6.update_layout(
+            title="Histogram of the Minor1 Grades",
+            xaxis_title="Marks",
+            yaxis_title="Frequency"
+        )
         
         graph_json = fig.to_json()
         graph2_json = fig2.to_json()
         graph3_json = fig3.to_json()
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json )
         
+        graph5_json = fig5.to_json()
+        graph6_json = fig6.to_json()
+        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, graph5_json = graph5_json, graph6_json = graph6_json, type = 'minor2' )
+        
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     elif ('minor1' in check):
@@ -1408,7 +1609,7 @@ def menu_analytics():
         
         
         
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json )
+        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json , type = 'minor1')
         
     else:
         return "Grades have not been uploaded"

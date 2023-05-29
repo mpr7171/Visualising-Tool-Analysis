@@ -87,6 +87,44 @@
 //    chatInterface.style.display = "none";
 //  }
 
+//  const navMenu = document.getElementById('nav-menu');
+//  const analyticsDropdown = document.querySelector('.dropdown');
+//  const logoutButton = document.getElementById('logout-button');
+//  const dropdownMenu = document.getElementById('dropdownMenu');
+//  const dropdownItems = dropdownMenu.getElementsByTagName('button');
+ 
+//  function toggleDropdown() {
+//    analyticsDropdown.classList.toggle('active');
+ 
+//    if (analyticsDropdown.classList.contains('active')) {
+//      logoutButton.style.marginTop = '160px';
+//    } else {
+//      logoutButton.style.marginTop = '0';
+//    }
+//  }
+ 
+//  navMenu.addEventListener('click', toggleDropdown);
+ 
+//  dropdownMenu.addEventListener('click', function(event) {
+//    const targetElement = event.target;
+ 
+//    if (targetElement.tagName === 'BUTTON') {
+//      var selectedItem = targetElement.textContent;
+//      handleDropdownItemClick(selectedItem);
+//    }
+ 
+//    event.preventDefault();
+//    event.stopPropagation();
+//  });
+ 
+//  window.addEventListener('click', function(event) {
+//    const targetElement = event.target;
+//    if (!targetElement.closest('.dropdown')) {
+//      analyticsDropdown.classList.remove('active');
+//      logoutButton.style.marginTop = '0';
+//    }
+//  }); 
+
 function toggleChat() {
   var chatInterface = document.getElementById("chat-interface");
   var chatIcon = document.getElementById("chat-icon");
@@ -146,17 +184,6 @@ function deleteMessage(message) {
   message.remove();
 }
 
-document.getElementById("send-button").addEventListener("click", function() {
-  var chatInput = document.getElementById("chat-input");
-  var messageText = chatInput.value.trim();
-
-  if (messageText !== "") {
-    var message = createMessageElement(messageText);
-    document.getElementById("chat-box").appendChild(message);
-    chatInput.value = "";
-  }
-});
-
 document.getElementById("chat-box").addEventListener("mouseover", function(e) {
   if (e.target.classList.contains("chat-message")) {
     var deleteButton = e.target.querySelector(".delete-button");
@@ -172,6 +199,52 @@ document.getElementById("chat-box").addEventListener("mouseout", function(e) {
 });
 
 function closeChat() {
-   var chatInterface = document.getElementById("chat-interface");
-   chatInterface.style.display = "none";
- }
+  var chatInterface = document.getElementById("chat-interface");
+  chatInterface.style.display = "none";
+}
+
+const navMenu = document.getElementById('nav-menu');
+const analyticsDropdown = document.querySelector('.dropdown');
+const logoutButton = document.getElementById('logout-button');
+const dropdownMenu = document.getElementById('dropdownMenu');
+const dropdownItems = dropdownMenu.getElementsByTagName('input');
+
+function toggleDropdown() {
+  analyticsDropdown.classList.toggle('active');
+
+  if (analyticsDropdown.classList.contains('active')) {
+    logoutButton.style.marginTop = '160px';
+  } else {
+    logoutButton.style.marginTop = '0';
+  }
+}
+
+navMenu.addEventListener('click', toggleDropdown);
+
+dropdownMenu.addEventListener('click', function(event) {
+  const targetElement = event.target;
+
+  if (targetElement.tagName === 'INPUT') {
+    var selectedItem = targetElement.value;
+    handleDropdownItemClick(selectedItem);
+    event.stopPropagation(); // Stop the event from propagating to the window
+  }
+});
+
+// Add this event listener to prevent the dropdown from closing when clicking on the dropdown items
+dropdownMenu.addEventListener('mouseup', function(event) {
+  event.stopPropagation();
+});
+
+function handleDropdownItemClick(selectedItem) {
+  // Replace this function with your desired action for the selected item
+  console.log(selectedItem);
+}
+
+window.addEventListener('click', function(event) {
+  const targetElement = event.target;
+  if (!targetElement.closest('.dropdown')) {
+    analyticsDropdown.classList.remove('active');
+    logoutButton.style.marginTop = '0';
+  }
+});

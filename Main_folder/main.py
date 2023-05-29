@@ -10,7 +10,7 @@ import numpy as np
 from plotly.subplots import make_subplots
 import random
 import pandas as pd
-
+from datetime import datetime
 import logging
 
 FIREBASE_WEB_API_KEY = "AIzaSyC0aEymSwOknoaBuMIYPrzU_JRLXmJF0dU"
@@ -23,7 +23,7 @@ app.secret_key = '666'
 auth = firebase_admin.auth
 
 app.secret_key='secret'
-cred = credentials.Certificate("Main_folder\\se-test-7f7e1-firebase-adminsdk-auhlb-6adf0cbd2c.json")
+cred = credentials.Certificate("se-test-7f7e1-firebase-adminsdk-auhlb-6adf0cbd2c.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': "https://se-test-7f7e1-default-rtdb.firebaseio.com"
 })
@@ -350,7 +350,6 @@ def login():
                         return redirect(url_for('faculty_dashboard'))
                     
                     else:
-                        print("ooopss2")
                         # return redirect(url_for('dashboard'))
                         render_template('login.html')
 
@@ -365,6 +364,22 @@ def login():
     
     else:
         return render_template('login.html')
+    
+def calculate_current_semester(batch_year):
+    # Get the current month and year
+    current_month = datetime.now().month
+    current_year = datetime.now().year
+
+    # Calculate the number of completed semesters
+    completed_semesters = ((current_year - batch_year) * 12 + current_month - 1 - 6) // 6
+
+    # Limit the number of completed semesters to the maximum
+    completed_semesters = min(completed_semesters, 8)
+
+    # Calculate the current semester
+    current_semester = completed_semesters + 1
+
+    return current_semester
 
 
 @app.route('/logout')
@@ -384,40 +399,56 @@ def dashboard():
     username = session['username']
     year = session['year']
 
+    year_int = int("20"+year)
+    curr_sem = calculate_current_semester(year_int)
 
-    print(username, branch, username)
-
-    path = 'GPA/batch'
+    path = 'GPA'
 
     stud_path = f'{path}/{year}/{branch}/{student_id}'
-    
+    # print(stud_path)
     ref = db.reference(stud_path)
 
-    # gpa_dic = ref.get()
+    sems_arr = []
+    gpa_arr = []
+    gpa_dic = ref.get()
 
-    # course_arr = [] 
-    # gpa_arr = []   
-    # for k in courses_dic:
-    #     course_arr.append(k)
-    #     gpa_arr.append(courses_dic[k])
+    no_flag = False
+    if gpa_dic == None:
+        no_flag = True
 
-    sems_arr = ['SEM'+str(i+1) for i in range(8)]
-    gpa_arr = [random.uniform(3, 10) for i in range(8)]
 
+    if no_flag == False:
+        gpa_arr_temp = list(gpa_dic.values())
+        for i in range(len(gpa_arr_temp)):
+
+            sems_arr.append('SEM'+str(i+1))
+
+            if gpa_arr_temp[i] == "NULL":
+                gpa_arr.append(0)
+
+            else:
+                gpa_arr.append(gpa_arr_temp[i])
+
+    else:
+        for i in range(8):
+
+            sems_arr.append('SEM'+str(i+1))
+            gpa_arr.append(0)
+
+    
     fig = go.Figure()
 
-    # fig.add_trace(go.Scatter(x=sems_arr, y=gpa_arr, mode='markers+lines', name='GPA'))
     fig.add_trace(go.Scatter(x=sems_arr, y=gpa_arr, mode='markers+lines', name='GPA'))
     fig.update_xaxes(title_text="SEM")
     fig.update_yaxes(title_text="GPA obtained")
     fig.update_layout(
-        height=492, width=760
+        height=498, width=765
     )
 
     graph_html = fig.to_html(full_html=False, include_plotlyjs=True)
 
 
-    return render_template('index.html', student_id = student_id, branch = branch, username = username, graph_html=graph_html)
+    return render_template('index.html', student_id = student_id, branch = branch, username = username, curr_sem = curr_sem ,graph_html=graph_html)
 
 
 
@@ -458,7 +489,7 @@ def signup():
 
 
             year,branch= extraction(email)
-            # year = "20" + year
+
             rollNo=extract_roll_number(email)
 
             branch_dict = {'uari' : "AI", 
@@ -469,15 +500,6 @@ def signup():
                        'ueee' : "EEE"}
             
             branch = branch_dict[branch]
-
-            # user_data = {
-            #     'name': name,
-            #     'email': email,
-            #     'branch':branch,
-            #     'rollNo':rollNo,
-            #     'admissionYear':year,
-            # }
-
 
 
             path = 'students/batch'
@@ -547,7 +569,7 @@ def grades():
                 'courseCredit': course_data['courseCredit'],
                 'score': course_data['gradeGot']
             }
-            if course_data['gradeGot'] < 4:
+            if course_data['gradeGot'] <= 4:
                 # Fetch study playlist for courses with a score less than 4
                 playlist_key = course_data['courseName']
                 additional_resources[playlist_key] = {
@@ -561,21 +583,39 @@ def grades():
         # Redirect to login page if user not authenticated
         return redirect(url_for('login'))
 
-@app.route('/analytics')
+# @app.route('/analytics')
+# def analytics():
+
+#     year = session['year']
+#     branch = session['branch']
+
+#     (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc) = get_analytics_info(year,branch, exam_type='minor1')
+
+#     return render_template('index_analytics.html', 
+#                         courses=courses,
+#                         graphs=graphs,
+#                         curr_user_scores = curr_user_scores ,
+#                         curr_user_perc = curr_user_perc, 
+#                         zip=zip, 
+#                         no_data = no_data, disp_msg = disp_msg)
+
+
+
+@app.route('/analytics_redirect')
 def analytics():
 
-    year = session['year']
+    student_id = session['student_id']
     branch = session['branch']
+    username = session['username']
+    year = session['year']
 
-    (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc) = get_analytics_info(year,branch, exam_type='minor1')
+    year_int = int("20"+year)
+    curr_sem = calculate_current_semester(year_int)
 
-    return render_template('index_analytics.html', 
-                        courses=courses,
-                        graphs=graphs,
-                        curr_user_scores = curr_user_scores ,
-                        curr_user_perc = curr_user_perc, 
-                        zip=zip, 
-                        no_data = no_data, disp_msg = disp_msg)
+    return render_template('analytics_redirect.html', 
+                        student_id = student_id, branch = branch, username = username, curr_sem = curr_sem )
+
+
 
 
 
@@ -638,72 +678,8 @@ def endsem():
 
 
 
-    # mean = np.mean(marks)
-    # std_dev = np.std(marks)
-    # x_values = np.linspace(mean - 3 * std_dev, mean + 3 * std_dev, 100)
-    # y_values = (1 / (std_dev * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x_values - mean) / std_dev) ** 2)
+##################  FACULTY #######################
 
-    # percentiles = np.percentile(marks, [50, 75, 90])
-
-    # # fig = go.Figure()
-    # fig = make_subplots(rows=2, cols=1, row_heights=[0.5, 0.5],
-    #         subplot_titles=("Distrbution of marks across branch", "Histogram of marks (in branch)"))
-
-    # fig.add_trace(go.Scatter(
-    #     x=x_values,
-    #     y=y_values,
-    #     mode='lines',
-    #     name='Normal Distribution'
-    # ))
-
-    # fig.add_trace(go.Scatter(
-    #     x=[percentiles[0], percentiles[0]],
-    #     y=[0, np.max(y_values)],
-    #     mode='lines',
-    #     name='50th Percentile',
-    #     line=dict(dash='dash')
-    # ))
-
-    # fig.add_trace(go.Scatter(
-    #     x=[percentiles[1], percentiles[1]],
-    #     y=[0, np.max(y_values)],
-    #     mode='lines',
-    #     name='75th Percentile',
-    #     line=dict(dash='dash')
-    # ))
-
-    # fig.add_trace(go.Scatter(
-    #     x=[percentiles[2], percentiles[2]],
-    #     y=[0, np.max(y_values)],
-    #     mode='lines',
-    #     name='90th Percentile',
-    #     line=dict(dash='dash')
-    # ))
-
-    # fig.update_layout(
-    #     title='Normal Distribution with Percentiles',
-    #     xaxis_title='Marks',
-    #     yaxis_title='Probability Density'
-    # )
-
-    # histogram = go.Histogram(
-    #     x=marks,
-    #     nbinsx=10,
-    #     name='Marks Distribution'
-    # )
-    # fig.update_xaxes(title_text="Marks")
-    # fig.update_yaxes(title_text="Frequency")
-
-    # fig.add_trace(histogram, row=2, col=1)
-
-    # class_average_str = "{:.2f}".format(mean)
-
-    # fig.update_layout(
-    #     # title='Histogram of marks',
-    #     # xaxis_title='Marks',
-    #     # yaxis_title='Frequency',
-    #     height=1200, width=1500
-    # )
 
 @app.route('/upload')
 def index():
@@ -747,12 +723,8 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
 
        
-       
-       
-       
-       
 
-        # # Plot the bell curve
+        # Plot the bell curve
         fig2 = go.Figure(data=go.Scatter(x=x, y=y, mode='lines', name='Bell Curve'))
         fig2.update_layout(
             title="The normal distribution analysis of the " + subject_code,
@@ -1256,7 +1228,15 @@ def faculty_dashboard():
         return redirect('/')
 
     name = session['faculty_name']
-    
+
+    first_name, last_name = name.split()
+    # Capitalize the first letter of each name
+    capitalized_first_name = first_name.capitalize()
+    capitalized_last_name = last_name.capitalize()
+
+    # Create the capitalized full name
+    capitalized_name = capitalized_first_name + " " + capitalized_last_name
+        
     db_name = name.replace(' ', '_')
     path = 'faculty/' + db_name + '/Courses'
     # database_url = 'https://se-test-7f7e1-default-rtdb.firebaseio.com/'
@@ -1274,19 +1254,10 @@ def faculty_dashboard():
     keys = list(temp_b.keys())
 
     for i in range(len(keys)):
-        batch.append(db.reference('faculty/ragava_reddy/Courses/' + keys[i]).get())
-        
-        
+        batch.append(db.reference(f'faculty/{name}/Courses/' + keys[i]).get())
         
     
-        
-        
-    
-        
-    
-        
-    
-    return render_template('index_faculty_db.html', prof_name = name, course_list = course_list, course_names = course_names, batch = batch)
+    return render_template('index_faculty_db.html', prof_name = capitalized_name, course_list = course_list, course_names = course_names, batch = batch)
 
 
 ## need to make changes for faculty database
@@ -1718,12 +1689,15 @@ def endsem_analytics():
     
     
 
+<<<<<<< Updated upstream
  
     
     
  
 
 
+=======
+>>>>>>> Stashed changes
 
 @app.route('/menu_analytics')
 def menu_analytics():
@@ -1735,11 +1709,8 @@ def menu_analytics():
     
     return render_template('menu_grades.html', course = course, batch = batch, branch = branch )
     
-    
-    
-    
-    
-    
+   
+
 
 if __name__ == '__main__':
     app.debug = True

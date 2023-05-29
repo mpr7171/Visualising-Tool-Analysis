@@ -7,7 +7,7 @@
     <button onclick="redirectToMinor1('{{ course }}', '{{ batch }}', '{{branch}}')">View Minor1 Analysis</button>
     <button onclick="redirectToMinor2('{{ course }}', '{{ batch }}', '{{branch}}')">View Minor2 Analysis</button>
     <button onclick="redirectToEndsem('{{ course }}', '{{ batch }}', '{{branch}}')">View End sem Analysis</button>
-    <button onclick="redirectToCombined('{{ course }}', '{{ batch }}', '{{branch}}')"> View combined analysis</button>
+    
 
     
 
@@ -26,9 +26,7 @@
             window.location.href = "/endsem_analytics?course="+ encodeURIComponent(course)+ "&batch=" + encodeURIComponent(batch) + "&branch=" + encodeURIComponent(branch) ;
         }
 
-        function redirectToCombined(course, batch, branch) {
-            window.location.href = "/combined_analytics?course="+ encodeURIComponent(course)+ "&batch=" + encodeURIComponent(batch) + "&branch=" + encodeURIComponent(branch) ;
-        }
+        
     </script>
 </body>
 </html>

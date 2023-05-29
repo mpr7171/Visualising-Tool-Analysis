@@ -816,10 +816,13 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         
         
         #
+
+        highest = minor1_grades.max()
+        lowest = minor1_grades.min()
         
         
-        
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json )
+        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json,course = subject_code, highest = highest,
+                               lowest = lowest, avg = avg_m1)
     
     
     
@@ -893,11 +896,14 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
             yaxis_title="Frequency"
         )
 
-        
+
+        highest = minor2_grades.max()
+        lowest = minor2_grades.min()
         graph_json = fig.to_json()
         graph2_json = fig2.to_json()
         graph3_json = fig3.to_json()
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json )
+        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json,course = subject_code, highest = highest,
+                               lowest = lowest, avg = avg_m2)
     
     
     
@@ -988,7 +994,10 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         graph_json = fig.to_json()
         graph2_json = fig2.to_json()
         graph3_json = fig3.to_json()
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json )
+        highest = end_sem_grades.max()
+        lowest = end_sem_grades.min()
+        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json,course = subject_code, highest = highest,
+                               lowest = lowest, avg = avg_endsem)
         
     
     return "Analytics cannot be viewed"
@@ -1260,7 +1269,10 @@ def minor1_analytics():
     graph_json = fig.to_json()
     graph2_json = fig2.to_json()
     graph3_json = fig3.to_json()
-    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json)
+    highest = minor1_grades.max()
+    lowest = minor1_grades.min()
+    
+    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m1, highest = highest, lowest = lowest)
     
     
     
@@ -1274,27 +1286,34 @@ def minor2_analytics():
     path = 'grades/' + batch + '/' +branch + '/' + course
     
     data = db.reference(path).get()
+    
     if data == None:
         return render_template('failure.html')
     
     studentID = list(data.keys())
     
-    minor1_grades = []
-    for i in range(len(studentID)):
-        marks = db.reference(path+'/'+studentID[i]).get()
-        minor1_grades.append(marks['minor1'])
-        
     
+    check = db.reference(path+'/'+studentID[0]).get() 
+    check = list(check.keys())
+    
+    if ('minor2' not in check):
+        return render_template('failure.html')
     
     minor1_grades = []
     minor2_grades = []
+    
     for i in range(len(studentID)):
             
-        marks = db.reference(path+'/'+studentID[i]).get()
-        if(marks['minor1'] == None):
-            return "Minor 1 grades have not been uploaded. Please upload Minor1 grades"
+        marks = db.reference(path+'/'+studentID[i]).get()  
+          
+        if(marks['minor2'] == None):
+            return "Minor 2 grades have not been uploaded. Please upload Minor 2 grades"
+        
         minor1_grades.append(marks['minor1'])
         minor2_grades.append(marks['minor2'])
+        
+        
+    
     minor1_grades = np.array(minor1_grades)
     minor2_grades = np.array(minor2_grades)
     avg_m1 = np.mean(minor1_grades)
@@ -1353,8 +1372,11 @@ def minor2_analytics():
     graph_json = fig.to_json()
     graph2_json = fig2.to_json()
     graph3_json = fig3.to_json()
-    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json )
-
+    highest = minor2_grades.max()
+    lowest = minor2_grades.min()
+    
+    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m2, highest = highest, lowest = lowest)
+    
 
 @app.route('/endsem_analytics')
 def endsem_analytics():
@@ -1368,6 +1390,12 @@ def endsem_analytics():
         return render_template('failure.html')
     
     studentID = list(data.keys())
+    
+    check = db.reference(path+'/'+studentID[0]).get() 
+    check = list(check.keys())
+    
+    if ('endsem' not in check):
+        return render_template('failure.html')
     
     minor1_grades = []
     minor2_grades = []
@@ -1442,7 +1470,10 @@ def endsem_analytics():
     graph_json = fig.to_json()
     graph2_json = fig2.to_json()
     graph3_json = fig3.to_json()
-    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json )
+    highest = end_sem_grades.max()
+    lowest = end_sem_grades.min()
+    
+    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_endsem, highest = highest, lowest = lowest)
     
 
     
@@ -1459,6 +1490,11 @@ def combined_analytics():
     
     studentID = list(data.keys())
     
+    check = db.reference(path+'/'+studentID[0]).get() 
+    check = list(check.keys())
+    
+    if ('endsem' not in check or 'minor1' not in check or 'minor2' not in check):
+        return render_template('failure.html')
     minor1_grades = []
     minor2_grades = []
     end_sem_grades = []
@@ -1480,6 +1516,7 @@ def combined_analytics():
     avg_m2 = np.mean(minor2_grades)
     avg_endsem = np.mean(end_sem_grades)
     result = [x + y + z for x, y, z in zip(minor1_grades, minor2_grades, end_sem_grades)]
+    avg_result = np.mean(result)
     result = np.array(result)
     minor1_df = pd.DataFrame({'Minor1': np.array(minor1_grades)})
     minor2_df = pd.DataFrame({'Minor2': np.array(minor2_grades)})
@@ -1545,7 +1582,10 @@ def combined_analytics():
     graph_json = fig.to_json()
     graph2_json = fig2.to_json()
     graph3_json = fig3.to_json()
-    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json )
+    highest = result.max()
+    lowest = result.min()
+    
+    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_result, highest = highest, lowest = lowest)
     
 
     

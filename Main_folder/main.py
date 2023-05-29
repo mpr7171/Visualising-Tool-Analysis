@@ -12,6 +12,7 @@ import random
 import pandas as pd
 from datetime import datetime
 import logging
+from functions import *
 
 FIREBASE_WEB_API_KEY = "AIzaSyC0aEymSwOknoaBuMIYPrzU_JRLXmJF0dU"
 rest_api_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
@@ -37,55 +38,6 @@ def add_cache_control(response):
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
     return response
-
-
-def calculate_percentage(scores, your_score):
-        higher_scores = 0
-        for sc in scores:
-            if sc > your_score:
-                higher_scores += 1
-        total_scores = len(scores)
-        percentage = (higher_scores / total_scores) * 100
-        return percentage
-
-
-# Define the Firebase Realtime Database reference
-def extract_roll_number(email):
-    if email is None:
-        return None
-    
-    if '20' in email:
-        se = re.sub(r'^(.*?)20', 'se20', str(email))
-        roll_number_match = re.search(r'^[^@]+', se)
-
-    elif '19' in email:
-        se = re.sub(r'^(.*?)19', 'se19', str(email))
-        roll_number_match = re.search(r'^[^@]+', se)
-
-    else:
-        roll_number_match = re.search(r'^[^@]+', str(email))
-
-    if roll_number_match:
-        roll_number = roll_number_match.group(0)
-    else:
-        roll_number = None
-
-    return roll_number
-
-def extraction(email):
-    year_match = re.search(r'\d+', str(email))
-    if year_match:
-        year = year_match.group(0)
-    else:
-        year = None
-
-    branch_match = re.search(r'\d+(.*?)\d+', str(email))
-    if branch_match:
-        branch = branch_match.group(1)
-    else:
-        branch = None
-
-    return year, branch
 
 
 def sign_in_with_email_and_password(email, password, return_secure_token = True):
@@ -324,8 +276,7 @@ def login():
                         return redirect(url_for('dashboard'))
                     
                     else:
-                        # print("ooopss")
-                        # return redirect(url_for('login'))
+
                         render_template('login.html')
 
             
@@ -365,21 +316,6 @@ def login():
     else:
         return render_template('login.html')
     
-def calculate_current_semester(batch_year):
-    # Get the current month and year
-    current_month = datetime.now().month
-    current_year = datetime.now().year
-
-    # Calculate the number of completed semesters
-    completed_semesters = ((current_year - batch_year) * 12 + current_month - 1 - 6) // 6
-
-    # Limit the number of completed semesters to the maximum
-    completed_semesters = min(completed_semesters, 8)
-
-    # Calculate the current semester
-    current_semester = completed_semesters + 1
-
-    return current_semester
 
 
 @app.route('/logout')
@@ -405,7 +341,6 @@ def dashboard():
     path = 'GPA'
 
     stud_path = f'{path}/{year}/{branch}/{student_id}'
-    # print(stud_path)
     ref = db.reference(stud_path)
 
     sems_arr = []
@@ -678,7 +613,7 @@ def endsem():
 
 
 
-##################  FACULTY #######################
+#######################  FACULTY  ##########################
 
 
 @app.route('/upload')
@@ -793,9 +728,6 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         yaxis_title="Frequency")
         
 
-        
-        
-        
         # fig3 = go.Figure(data=[go.Histogram(x=minor1_grades)])
 
 
@@ -810,13 +742,6 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         graph2_json = fig2.to_json()
         graph3_json = fig3.to_json()
         
-        
-        
-        
-        
-        
-        #
-
         highest = minor1_grades.max()
         lowest = minor1_grades.min()
         Q1 = np.percentile(minor1_grades, 25)
@@ -832,7 +757,7 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
     
     
     
-    # MINOR 2 --------------------------------------------------------------------------
+    # MINOR 2 -------------------------------------------------------------------------- 
     
     
     elif exam_type == "minor2":
@@ -1125,12 +1050,6 @@ def upload_to_database(batch, exam_type, file):
         
     path = 'grades/'+ batch + '/' + branch + '/' + subject_code 
     
-  
-    
-    # input = {'subject_code': subject_code}
-    # response = requests.put(f'{database_url}/{path}/{subject_code}.json',json = input)
-
-
 
 
     if csv_file and csv_file.filename.endswith('.csv'):
@@ -1387,17 +1306,6 @@ def minor1_analytics():
     yaxis_title="Frequency")
     
 
-        
-        
-        
-    # fig3 = go.Figure(data=[go.Histogram(x=minor1_grades)])
-
-
-    # fig3.update_layout(
-    #     title="Histogram for the Minor 1 Grades",
-    #     xaxis_title="Marks",
-    #     yaxis_title="Frequency"
-    # )
 
         
     graph_json = fig.to_json()
@@ -1409,8 +1317,6 @@ def minor1_analytics():
     return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m1, highest = highest, lowest = lowest, 
                            course = course, type = 'Minor1', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
                            asc = sorted_array)
-    
-    
     
     
    
@@ -1664,15 +1570,6 @@ def endsem_analytics():
     yaxis_title="Frequency")
         
         
-    # fig3 = go.Figure(data=[go.Histogram(x=end_sem_grades)])
-
-
-    # fig3.update_layout(
-    #     title="Histogram of the End Sem Grades",
-    #     xaxis_title="Marks",
-    #     yaxis_title="Frequency"
-    # )
-        
     graph_json = fig.to_json()
     graph2_json = fig2.to_json()
     graph3_json = fig3.to_json()
@@ -1684,20 +1581,7 @@ def endsem_analytics():
                            asc = sorted_array)
     
     
-    
-    
-    
-    
 
-<<<<<<< Updated upstream
- 
-    
-    
- 
-
-
-=======
->>>>>>> Stashed changes
 
 @app.route('/menu_analytics')
 def menu_analytics():
@@ -1710,7 +1594,6 @@ def menu_analytics():
     return render_template('menu_grades.html', course = course, batch = batch, branch = branch )
     
    
-
 
 if __name__ == '__main__':
     app.debug = True

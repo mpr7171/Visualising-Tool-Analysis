@@ -360,3 +360,8 @@ body{
 .analysisbtn:active {
     background-color: #ffbf00;
 }
+
+.tableclass td{
+    padding: 3px;
+    margin: 3px;
+}

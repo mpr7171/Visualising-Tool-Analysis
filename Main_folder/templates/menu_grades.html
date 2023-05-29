@@ -1,65 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Analytics</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <style>
-        .container {
-            margin-bottom: 20px;
-            border: 1px solid black;
-            padding: 10px;
-        }
-    </style>
+    <title>Select the Exam </title>
 </head>
 <body>
-    <h3> </h3>
-    <div class="container">
-        <div id="graph1"></div>
-        <script>
-            
-            var type = '{{type}}'
-            if (type === 'end_sem' || type === 'minor2' || type === 'minor3')
-           
-            <script>      
-                var graphJsonData = '{{ graph_json | safe }}';
-                var graphData = JSON.parse(graphJsonData);
+    <button onclick="redirectToMinor1('{{ course }}', '{{ batch }}', '{{branch}}')">View Minor1 Analysis</button>
+    <button onclick="redirectToMinor2('{{ course }}', '{{ batch }}', '{{branch}}')">View Minor2 Analysis</button>
+    <button onclick="redirectToEndsem('{{ course }}', '{{ batch }}', '{{branch}}')">View End sem Analysis</button>
+    <button onclick="redirectToCombined('{{ course }}', '{{ batch }}', '{{branch}}')"> View combined analysis</button>
 
-                // Render the graph using Plotly
-                Plotly.newPlot('graph1', graphData.data, graphData.layout);
-            </script>
-        </script>
-    </div>
-    <h3> </h3>
-    <div class="container">
-        <div id="graph2"></div>
-        <script>
-            // Retrieve the graph JSON data from Flask
-            var graphJsonData2 = '{{ graph2_json | safe }}';
-            var graphData2 = JSON.parse(graphJsonData2);
+    
 
-            // Render the graph using Plotly
-            Plotly.newPlot('graph2', graphData2.data, graphData2.layout);
-        </script>
-    </div>
-    <div class="container">
-        <div id="graph3"></div>
-        <script>
-            // Retrieve the graph JSON data from Flask
-            var graphJsonData3 = '{{ graph3_json | safe }}';
-            var graphData3 = JSON.parse(graphJsonData3);
 
-            // Render the graph using Plotly
-            Plotly.newPlot('graph3', graphData3.data, graphData3.layout);
-        </script>
+    <script>
+        function redirectToMinor1(course, batch, branch) {
+            window.location.href = "/minor1_analytics?course="+ encodeURIComponent(course)+ "&batch=" + encodeURIComponent(batch) + "&branch=" + encodeURIComponent(branch) ;
+        }
 
-        
-    </div>
+        function redirectToMinor2(course, batch, branch) {
+            window.location.href = "/minor2_analytics?course="+ encodeURIComponent(course)+ "&batch=" + encodeURIComponent(batch) + "&branch=" + encodeURIComponent(branch) ;
 
-    <td><button onclick = "redirectToHomePage()" class="button">Go Back Home</button></td>
-                <script>
-                    function redirectToHomePage(){
-                        window.location.href = "/faculty_dashboard";
-                    }
-                </script>
+        }
+
+        function redirectToEndsem(course, batch, branch) {
+            window.location.href = "/endsem_analytics?course="+ encodeURIComponent(course)+ "&batch=" + encodeURIComponent(batch) + "&branch=" + encodeURIComponent(branch) ;
+        }
+
+        function redirectToCombined(course, batch, branch) {
+            window.location.href = "/combined_analytics?course="+ encodeURIComponent(course)+ "&batch=" + encodeURIComponent(batch) + "&branch=" + encodeURIComponent(branch) ;
+        }
+    </script>
 </body>
 </html>

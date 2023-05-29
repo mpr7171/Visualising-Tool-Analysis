@@ -12,11 +12,17 @@
     </style>
 </head>
 <body>
-    <h3> The highest marks in the {{course}} is {{highest}}</h3>
-    <h3> The lowest marks in the {{course}} is {{lowest}}</h3>
-    <h3> The average marks are {{avg}} </h3>
+
+    <h3><b> {{course}} {{type}} Analytics </b> </h3>
+    <p> The highest marks in the {{course}} {{type}} is {{highest}}</p>
+    <p> The lowest marks in the {{course}} {{type}} is {{lowest}}</p>
+    <p> The average marks are {{avg}} </p>
+    <h3> The top 3 marks in the {{course}} {{type}} exam is {{asc[0]}} , {{asc[1]}}, {{asc[2]}} </h3>
+
+
     <div class="container">
         <div id="graph1"></div>
+        <p> Fifty percent of the students lie in the region of {{q1}} and {{q2}} marks range </p>
         <script>
             // Retrieve the graph JSON data from Flask
             var graphJsonData = '{{ graph_json | safe }}';
@@ -26,9 +32,10 @@
             Plotly.newPlot('graph1', graphData.data, graphData.layout);
         </script>
     </div>
-    <h3> </h3>
+    <p> </p>
     <div class="container">
         <div id="graph2"></div>
+        <p> The Normal Distribution of the marks with 75, 90, 95 th percentiles </p>
         <script>
             // Retrieve the graph JSON data from Flask
             var graphJsonData2 = '{{ graph2_json | safe }}';
@@ -40,6 +47,7 @@
     </div>
     <div class="container">
         <div id="graph3"></div>
+        <p> Most of the students lie in the region of {{start}} and {{end}} and the number of students in that region are {{high_freq_count}} </p>
         <script>
             // Retrieve the graph JSON data from Flask
             var graphJsonData3 = '{{ graph3_json | safe }}';

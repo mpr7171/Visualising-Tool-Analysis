@@ -792,18 +792,46 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
             )
 
         fig2.update_layout(showlegend=True)  # Display legends in the graph
+        hist, bins = np.histogram(minor1_grades)
 
-        
-        
-        
+        # Find the bin with the highest count
+        highest_freq_bin_index = np.argmax(hist)
+        highest_freq_count = np.max(hist)
+
+        # Determine the range of the bin with the highest count
+        range_start = bins[highest_freq_bin_index]
+        range_end = bins[highest_freq_bin_index + 1]
+
         fig3 = go.Figure(data=[go.Histogram(x=minor1_grades)])
 
+        # Find the index of the bin with the highest count
+    
 
-        fig3.update_layout(
-            title="Histogram for the Minor 1 Grades",
-            xaxis_title="Marks",
-            yaxis_title="Frequency"
-        )
+        # Set the color for all bins
+        colors = ['lightblue'] * len(hist)
+
+        # Set a different color for the bin with the highest count
+        colors[highest_freq_bin_index] = 'red'
+
+        # Update the marker color for the histogram trace
+        fig3.update_traces(marker=dict(color=colors))
+
+        fig3.update_layout(title="Histogram of Minor1 Grades",
+                            xaxis_title="Marks",
+        yaxis_title="Frequency")
+        
+
+        
+        
+        
+        # fig3 = go.Figure(data=[go.Histogram(x=minor1_grades)])
+
+
+        # fig3.update_layout(
+        #     title="Histogram for the Minor 1 Grades",
+        #     xaxis_title="Marks",
+        #     yaxis_title="Frequency"
+        # )
 
         
         graph_json = fig.to_json()
@@ -819,10 +847,13 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
 
         highest = minor1_grades.max()
         lowest = minor1_grades.min()
+        Q1 = np.percentile(minor1_grades, 25)
+        Q3 = np.percentile(minor1_grades, 75)
+        sorted_array = np.sort(minor1_grades)[::-1]
         
-        
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json,course = subject_code, highest = highest,
-                               lowest = lowest, avg = avg_m1)
+        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m1, highest = highest, lowest = lowest, 
+                           course = subject_code, type = 'Minor 1', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
+                           asc = sorted_array)
     
     
     
@@ -887,23 +918,68 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         # Update the layout to show the legend
         fig2.update_layout(showlegend=True)
         
+        hist, bins = np.histogram(minor2_grades)
+
+        # Find the bin with the highest count
+        highest_freq_bin_index = np.argmax(hist)
+        highest_freq_count = np.max(hist)
+
+        # Determine the range of the bin with the highest count
+        range_start = bins[highest_freq_bin_index]
+        range_end = bins[highest_freq_bin_index + 1]
+
         fig3 = go.Figure(data=[go.Histogram(x=minor2_grades)])
 
+        # Find the index of the bin with the highest count
+    
 
-        fig3.update_layout(
-            title="Histogram for the Minor 2 grades",
-            xaxis_title="Marks",
-            yaxis_title="Frequency"
-        )
+        # Set the color for all bins
+        colors = ['lightblue'] * len(hist)
+
+        # Set a different color for the bin with the highest count
+        colors[highest_freq_bin_index] = 'red'
+
+        # Update the marker color for the histogram trace
+        fig3.update_traces(marker=dict(color=colors))
+
+        fig3.update_layout(title="Histogram of Minor2 Grades",
+                            xaxis_title="Marks",
+        yaxis_title="Frequency")
+        
+
+        
+        
+        
+        # fig3 = go.Figure(data=[go.Histogram(x=minor1_grades)])
 
 
-        highest = minor2_grades.max()
-        lowest = minor2_grades.min()
+        # fig3.update_layout(
+        #     title="Histogram for the Minor 1 Grades",
+        #     xaxis_title="Marks",
+        #     yaxis_title="Frequency"
+        # )
+
+        
         graph_json = fig.to_json()
         graph2_json = fig2.to_json()
         graph3_json = fig3.to_json()
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json,course = subject_code, highest = highest,
-                               lowest = lowest, avg = avg_m2)
+        
+        
+        
+        
+        
+        
+        #
+
+        highest = minor2_grades.max()
+        lowest = minor2_grades.min()
+        Q1 = np.percentile(minor2_grades, 25)
+        Q3 = np.percentile(minor2_grades, 75)
+        sorted_array = np.sort(minor2_grades)[::-1]
+        
+        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m1, highest = highest, lowest = lowest, 
+                           course = subject_code, type = 'Minor 2', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
+                           asc = sorted_array)
     
     
     
@@ -982,22 +1058,68 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         fig2.update_layout(showlegend=True)
         
         
+        hist, bins = np.histogram(end_sem_grades)
+
+        # Find the bin with the highest count
+        highest_freq_bin_index = np.argmax(hist)
+        highest_freq_count = np.max(hist)
+
+        # Determine the range of the bin with the highest count
+        range_start = bins[highest_freq_bin_index]
+        range_end = bins[highest_freq_bin_index + 1]
+
         fig3 = go.Figure(data=[go.Histogram(x=end_sem_grades)])
 
+        # Find the index of the bin with the highest count
+    
 
-        fig3.update_layout(
-            title="Histogram of the End Sem Grades",
-            xaxis_title="Marks",
-            yaxis_title="Frequency"
-        )
+        # Set the color for all bins
+        colors = ['lightblue'] * len(hist)
+
+        # Set a different color for the bin with the highest count
+        colors[highest_freq_bin_index] = 'red'
+
+        # Update the marker color for the histogram trace
+        fig3.update_traces(marker=dict(color=colors))
+
+        fig3.update_layout(title="Histogram of End semester Grades",
+                            xaxis_title="Marks",
+        yaxis_title="Frequency")
+        
+
+        
+        
+        
+        # fig3 = go.Figure(data=[go.Histogram(x=minor1_grades)])
+
+
+        # fig3.update_layout(
+        #     title="Histogram for the Minor 1 Grades",
+        #     xaxis_title="Marks",
+        #     yaxis_title="Frequency"
+        # )
+
         
         graph_json = fig.to_json()
         graph2_json = fig2.to_json()
         graph3_json = fig3.to_json()
+        
+        
+        
+        
+        
+        
+        #
+
         highest = end_sem_grades.max()
         lowest = end_sem_grades.min()
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json,course = subject_code, highest = highest,
-                               lowest = lowest, avg = avg_endsem)
+        Q1 = np.percentile(end_sem_grades, 25)
+        Q3 = np.percentile(end_sem_grades, 75)
+        sorted_array = np.sort(end_sem_grades)[::-1]
+        
+        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m1, highest = highest, lowest = lowest, 
+                           course = subject_code, type = 'End Sem', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
+                           asc = sorted_array)
         
     
     return "Analytics cannot be viewed"
@@ -1187,6 +1309,11 @@ def minor1_analytics():
         marks = db.reference(path+'/'+studentID[i]).get()
         minor1_grades.append(marks['minor1'])
         
+    #top 3 marks
+    sorted_array = np.sort(minor1_grades)[::-1]
+    
+    
+        
     
         
     minor1_df = pd.DataFrame({'Minor1': np.array(minor1_grades)})
@@ -1194,6 +1321,8 @@ def minor1_analytics():
     fig.add_trace(go.Box(y=minor1_df['Minor1'], name="Minor 1"))
     fig.update_layout(title= "The grade analysis of the course " + course)
     fig.update_layout(showlegend=True)
+    Q1 = np.percentile(minor1_grades, 25)
+    Q3 = np.percentile(minor1_grades, 75)
         
         #Normal Curve 
     minor1_grades = np.array(minor1_grades)
@@ -1252,18 +1381,52 @@ def minor1_analytics():
         )
 
     fig2.update_layout(showlegend=True)  # Display legends in the graph
+    
+    
+    
+    
+    
+    
+    hist, bins = np.histogram(minor1_grades)
 
-        
-        
-        
+    # Find the bin with the highest count
+    highest_freq_bin_index = np.argmax(hist)
+    highest_freq_count = np.max(hist)
+
+    # Determine the range of the bin with the highest count
+    range_start = bins[highest_freq_bin_index]
+    range_end = bins[highest_freq_bin_index + 1]
+
     fig3 = go.Figure(data=[go.Histogram(x=minor1_grades)])
 
+    # Find the index of the bin with the highest count
+   
 
-    fig3.update_layout(
-        title="Histogram for the Minor 1 Grades",
-        xaxis_title="Marks",
-        yaxis_title="Frequency"
-    )
+    # Set the color for all bins
+    colors = ['lightblue'] * len(hist)
+
+    # Set a different color for the bin with the highest count
+    colors[highest_freq_bin_index] = 'red'
+
+    # Update the marker color for the histogram trace
+    fig3.update_traces(marker=dict(color=colors))
+
+    fig3.update_layout(title="Histogram of Minor 1 Grades",
+                        xaxis_title="Marks",
+    yaxis_title="Frequency")
+    
+
+        
+        
+        
+    # fig3 = go.Figure(data=[go.Histogram(x=minor1_grades)])
+
+
+    # fig3.update_layout(
+    #     title="Histogram for the Minor 1 Grades",
+    #     xaxis_title="Marks",
+    #     yaxis_title="Frequency"
+    # )
 
         
     graph_json = fig.to_json()
@@ -1272,7 +1435,9 @@ def minor1_analytics():
     highest = minor1_grades.max()
     lowest = minor1_grades.min()
     
-    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m1, highest = highest, lowest = lowest)
+    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m1, highest = highest, lowest = lowest, 
+                           course = course, type = 'Minor1', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
+                           asc = sorted_array)
     
     
     
@@ -1312,6 +1477,8 @@ def minor2_analytics():
         minor1_grades.append(marks['minor1'])
         minor2_grades.append(marks['minor2'])
         
+    sorted_array = np.sort(minor2_grades)[::-1]
+        
         
     
     minor1_grades = np.array(minor1_grades)
@@ -1324,7 +1491,9 @@ def minor2_analytics():
     fig.add_trace(go.Box(y=minor1_df['Minor1'], name="Minor 1"))
     fig.add_trace(go.Box(y=minor2_df['Minor2'], name="Minor 2"))
     fig.update_layout(showlegend=True)
-        
+    
+    Q1 = np.percentile(minor2_grades, 25)
+    Q3 = np.percentile(minor2_grades, 75)    
         
         
     std = np.std(minor2_grades)
@@ -1358,15 +1527,44 @@ def minor2_analytics():
         )
         # Update the layout to show the legend
     fig2.update_layout(showlegend=True)
+    
+    
+    hist, bins = np.histogram(minor2_grades)
+
+    # Find the bin with the highest count
+    highest_freq_bin_index = np.argmax(hist)
+    highest_freq_count = np.max(hist)
+
+    # Determine the range of the bin with the highest count
+    range_start = bins[highest_freq_bin_index]
+    range_end = bins[highest_freq_bin_index + 1]
+
+    fig3 = go.Figure(data=[go.Histogram(x=minor1_grades)])
+
+    # Find the index of the bin with the highest count
+   
+
+    # Set the color for all bins
+    colors = ['lightblue'] * len(hist)
+
+    # Set a different color for the bin with the highest count
+    colors[highest_freq_bin_index] = 'red'
+
+    # Update the marker color for the histogram trace
+    fig3.update_traces(marker=dict(color=colors))
+
+    fig3.update_layout(title="Histogram of Minor 2 Grades",
+                        xaxis_title="Marks",
+    yaxis_title="Frequency",)
         
-    fig3 = go.Figure(data=[go.Histogram(x=minor2_grades)])
+    # fig3 = go.Figure(data=[go.Histogram(x=minor2_grades)])
 
 
-    fig3.update_layout(
-        title="Histogram for the Minor 2 grades",
-        xaxis_title="Marks",
-        yaxis_title="Frequency"
-    )
+    # fig3.update_layout(
+    #     title="Histogram for the Minor 2 grades",
+    #     xaxis_title="Marks",
+    #     yaxis_title="Frequency"
+    # )
 
         
     graph_json = fig.to_json()
@@ -1375,7 +1573,12 @@ def minor2_analytics():
     highest = minor2_grades.max()
     lowest = minor2_grades.min()
     
-    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m2, highest = highest, lowest = lowest)
+    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m1, highest = highest, lowest = lowest, 
+                           course = course, type = 'Minor 2', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
+                           asc = sorted_array)
+    
+    
+    
     
 
 @app.route('/endsem_analytics')
@@ -1410,6 +1613,8 @@ def endsem_analytics():
         minor1_grades.append(marks['minor1'])
         minor2_grades.append(marks['minor2'])
         end_sem_grades.append(marks['endsem'])
+        
+    sorted_array = np.sort(end_sem_grades)[::-1]
             
     minor1_grades = np.array(minor1_grades)
     minor2_grades = np.array(minor2_grades)
@@ -1425,6 +1630,8 @@ def endsem_analytics():
     fig.add_trace(go.Box(y=minor2_df['Minor2'], name="Minor 2"))
     fig.add_trace(go.Box(y=endsem_df['End Sem'], name="End Semester"))
     fig.update_layout(showlegend=True)
+    Q1 = np.percentile(end_sem_grades, 25)
+    Q3 = np.percentile(end_sem_grades, 75)
         
     std = np.std(end_sem_grades)
     x = np.linspace(end_sem_grades.min(), end_sem_grades.max(), 100)
@@ -1456,16 +1663,44 @@ def endsem_analytics():
         )
         # Update the layout to show the legend
     fig2.update_layout(showlegend=True)
-        
-        
+    
+    hist, bins = np.histogram(end_sem_grades)
+
+    # Find the bin with the highest count
+    highest_freq_bin_index = np.argmax(hist)
+    highest_freq_count = np.max(hist)
+
+    # Determine the range of the bin with the highest count
+    range_start = bins[highest_freq_bin_index]
+    range_end = bins[highest_freq_bin_index + 1]
+
     fig3 = go.Figure(data=[go.Histogram(x=end_sem_grades)])
 
+    # Find the index of the bin with the highest count
+   
 
-    fig3.update_layout(
-        title="Histogram of the End Sem Grades",
-        xaxis_title="Marks",
-        yaxis_title="Frequency"
-    )
+    # Set the color for all bins
+    colors = ['lightblue'] * len(hist)
+
+    # Set a different color for the bin with the highest count
+    colors[highest_freq_bin_index] = 'red'
+
+    # Update the marker color for the histogram trace
+    fig3.update_traces(marker=dict(color=colors))
+
+    fig3.update_layout(title="Histogram of End Sem Grades",
+                        xaxis_title="Marks",
+    yaxis_title="Frequency")
+        
+        
+    # fig3 = go.Figure(data=[go.Histogram(x=end_sem_grades)])
+
+
+    # fig3.update_layout(
+    #     title="Histogram of the End Sem Grades",
+    #     xaxis_title="Marks",
+    #     yaxis_title="Frequency"
+    # )
         
     graph_json = fig.to_json()
     graph2_json = fig2.to_json()
@@ -1473,7 +1708,14 @@ def endsem_analytics():
     highest = end_sem_grades.max()
     lowest = end_sem_grades.min()
     
-    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_endsem, highest = highest, lowest = lowest)
+    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m1, highest = highest, lowest = lowest, 
+                           course = course, type = 'End Sem', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
+                           asc = sorted_array)
+    
+    
+    
+    
+    
     
 
  

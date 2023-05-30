@@ -167,7 +167,7 @@ def previous_year(curr_year,branch):
             #     mode='lines',
             #     name='Mean',
             #     line=dict(dash='dash')
-            # )
+            # ))
 
             # curr_scatter.add_trace(go.Scatter(
             #     x=[np.max(curr_marks), np.max(curr_marks)],
@@ -240,13 +240,13 @@ def previous_year(curr_year,branch):
                 line=dict(dash='solid')
             ), row=1, col=1)
 
-            fig.update_layout(
-                # title='Normal Distribution with Percentiles',
-                xaxis_title='Marks',
-                yaxis_title='Probability Density',
-                height=2400,
-                width=1600
-            )
+            # fig.update_layout(
+            #     # title='Normal Distribution with Percentiles',
+            #     xaxis_title='Marks',
+            #     yaxis_title='Probability Density',
+            #     height=2400,
+            #     width=1600
+            # )
 
 
             # prev_scatter = go.Scatter(
@@ -318,13 +318,13 @@ def previous_year(curr_year,branch):
                     line=dict(dash='dash')
                 ))
 
-            fig.update_layout(
-                # title='Normal Distribution with Percentiles (Previous Year)',
-                xaxis_title='Marks',
-                yaxis_title='Probability Density',
-                height=2400,
-                width=1600
-            )
+            # fig.update_layout(
+            #     # title='Normal Distribution with Percentiles (Previous Year)',
+            #     xaxis_title='Marks',
+            #     yaxis_title='Probability Density',
+            #     height=2400,
+            #     width=1600
+            # )
 
 
             # histogram = go.Histogram(
@@ -376,11 +376,21 @@ def previous_year(curr_year,branch):
 
             fig.update_layout(
                 # title='Histogram of Marks (Previous Year)',
-                xaxis_title='Marks',
-                yaxis_title='Frequency',
+                # xaxis_title='Marks',
+                # yaxis_title='Frequency',
                 height=2400,
                 width=1600
             )
+
+            fig.update_xaxes(title_text='Marks',row=1,col=1)
+            fig.update_yaxes(title_text='Probability Density', row=1, col=1)
+            fig.update_xaxes(title_text='Marks',row=2,col=1)
+            fig.update_yaxes(title_text='Probability Density', row=2, col=1)
+            fig.update_xaxes(title_text='Marks',row=3,col=1)
+            fig.update_yaxes(title_text='Frequency', row=3, col=1)
+            fig.update_xaxes(title_text='Marks',row=4,col=1)
+            fig.update_yaxes(title_text='Frequency', row=4, col=1)
+
             # fig.update_xaxes(title_text="Marks")
             # fig.update_yaxes(title_text="Frequency")
             # fig.update_layout(

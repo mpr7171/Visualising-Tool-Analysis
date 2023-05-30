@@ -537,11 +537,11 @@ def get_analytics_info(year, branch, exam_type):
                     line=dict(dash='solid')
                 ))
 
-                fig.update_layout(
-                    title='Normal Distribution with Percentiles',
-                    xaxis_title='Marks',
-                    yaxis_title='Probability Density'
-                )
+                # fig.update_layout(
+                #     title='Normal Distribution with Percentiles',
+                #     xaxis_title='Marks',
+                #     yaxis_title='Probability Density'
+                # )
 
                 histogram = go.Histogram(
                     x=curr_marks,
@@ -554,11 +554,15 @@ def get_analytics_info(year, branch, exam_type):
                 fig.add_trace(histogram, row=2, col=1)
 
                 fig.update_layout(
-                title='Histogram of marks',
-                xaxis_title='Marks',
-                yaxis_title='Frequency',
+                # title='Histogram of marks',
+                # xaxis_title='Marks',
+                # yaxis_title='Frequency',
                 height=800, width=1200
                 )
+                fig.update_xaxes(title_text='Marks',row=1,col=1)
+                fig.update_yaxes(title_text='Probability Density', row=1, col=1)
+                fig.update_xaxes(title_text='Marks',row=2,col=1)
+                fig.update_yaxes(title_text='Frequency', row=2, col=1)
 
                 graph_html = fig.to_html(full_html=False, include_plotlyjs=True)
                 graphs.append(graph_html)

@@ -37,10 +37,31 @@
     <div id="welcome-container">
       <div id="menu-items">
         <ul>
-          <li><a href="{{ url_for('minor1') }}" class="menu-item">Minor 1</a></li>
-          <li><a href="{{ url_for('minor2') }}" class="menu-item">Minor 2</a></li>
-          <li><a href="{{ url_for('endsem') }}" class="menu-item">End Sem</a></li>
-          <li><a href="{{ url_for('prevyear') }}" class="menu-item">Previous Year</a></li>
+
+            <li>
+              <div class="menu-item-container">
+                <a href="{{ url_for('minor1') }}" class="menu-item">Minor 1</a>
+                <p class="menu-description">You can view your Minor 1 Analysis Here</p>
+              </div>
+            </li>
+            <li>
+              <div class="menu-item-container">
+                <a href="{{ url_for('minor2') }}" class="menu-item">Minor 2</a>
+                <p class="menu-description">You can view your Minor 2 Analysis Here</p>
+              </div>
+            </li>
+            <li>
+              <div class="menu-item-container">
+                <a href="{{ url_for('endsem') }}" class="menu-item">End Sem</a>
+                <p class="menu-description">You can view your End Sem Analysis Here</p>
+              </div>
+            </li>
+            <li>
+              <div class="menu-item-container">
+                <a href="{{ url_for('prevyear') }}" class="menu-item">Previous Year</a>
+                <p class="menu-description">You can view the Previous Year Analysis Here</p>
+              </div>
+            </li>
         </ul>
       </div>
     </div>

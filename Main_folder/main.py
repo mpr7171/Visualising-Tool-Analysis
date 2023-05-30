@@ -25,7 +25,7 @@ app.secret_key = '666'
 auth = firebase_admin.auth
 
 app.secret_key='secret'
-cred = credentials.Certificate("Main_folder\\se-test-7f7e1-firebase-adminsdk-auhlb-6adf0cbd2c.json")
+cred = credentials.Certificate("se-test-7f7e1-firebase-adminsdk-auhlb-6adf0cbd2c.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': "https://se-test-7f7e1-default-rtdb.firebaseio.com"
 })

@@ -1,106 +1,3 @@
-
-/* Chat Interface */
-#chat-interface {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  width: 350px;
-  background-color: #fff;
-  display: none;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-#close-button {
-  position: absolute;
-  top: -5px;
-  right: 5px;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-#chat-interface h2 {
-  margin-bottom: 10px;
-}
-
-#chat-interface p {
-  margin-bottom: 20px;
-}
-
-#chat-interface form {
-  display: flex;
-  flex-direction: column;
-  margin-left: 20px;
-}
-
-#chat-interface input[type="text"],
-#chat-interface textarea {
-  margin-bottom: 10px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-}
-
-#chat-interface button {
-  padding: 10px;
-  background-color: #555;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-#chat-icon.active {
-  background-color: lightgray;
-}
-
-#chat-interface form {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.input-container {
-  display: flex;
-  align-items: center;
-  
-}
-
-#chat-input-container {
-  display: flex;
-  align-items: center;
-}
-
-#chat-input {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  border-bottom: 1px solid #ddd;
-  font-size: 14px;
-  outline: none;
-}
-
-#send-button {
-  padding: 2px 20px;
-  background-color: #555;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-left: 10px;
-  margin-top: -10px;
-}
-
-#chat-box {
-  height: 220px;
-  overflow: auto;
-  margin-bottom: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 10px;
-} */
-
 * {
   margin: 0;
   padding: 0;
@@ -109,13 +6,15 @@
   outline: none;
   text-decoration: none;
   font-family: 'Poppins', sans-serif;
+  background: linear-gradient(to bottom, #edf2fb);
 }
 
 #score-logo-mobile {
-  width: 160px;
-  height: 120px;
-  margin: 4px auto;
-  padding: 10px;
+width: 220px;
+height: 180px;
+margin: 2px auto;
+padding: 10px;
+margin-top: -30px;
 
 }
 
@@ -134,13 +33,13 @@
 }
 
 
-  #dashboard {
-    background-color: lightgrey;
+#dashboard {
+  background: linear-gradient(to bottom, #c1d3fe, #edf2fb);
     padding: 5px;
     flex: 0.1;
     transition: background-color 0.3s ease-in-out;
     animation: fadeIn 0.5s ease-in-out 0.5s forwards;
-    margin-right: 20px;
+    margin-right: 0px;
     transform: translateX(0);
   }
 
@@ -152,18 +51,20 @@
   }
 
   #dashboard-right {
-  background-color: lightgrey;
+  background: linear-gradient(to bottom, #c1d3fe, #edf2fb);
   height: 100vh;
   padding: 10px;
   flex: 0.7;
   margin-top: 0px;
-  margin-left: 140px;
+  margin-left: 0px;
   transition: background-color 0.3s ease-in-out;
   display: flex;
   justify-content: center;
   align-items: center;
   animation: fadeIn 0.5s ease-in-out 0.5s forwards;
+  width: 70%;
 }
+
 
 #student-profile {
   text-align: center;
@@ -185,6 +86,7 @@
 .profile-name {
   font-size: 24px;
   margin-bottom: 5px;
+  padding: 20px;
 }
 
 .profile-info {
@@ -193,32 +95,36 @@
 }
 
 #welcome-container {
-  flex: 1;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  padding: 20px;
-  opacity: 0;
-  animation: fadeIn 0.5s ease-in-out 0.5s forwards;
-}
+    display: flex;
+    flex: 1.5;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 20px;
+    margin-left: 0;
+    z-index: 1;
+    animation: fadeIn 0.5s ease-in-out 0.5s forwards;
+    background: #D7E3FC;
+    margin-top: 0;
+  }
+
 
 #rectangular-container {
-  background-color: silver;
-  /* height: 500px; */
-  padding: 10px;
+  background-color: lightgrey;
+  height: 500px;
+  padding: 20px;
   margin-top: 130px;
   border-radius: 0px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  /* width: 675px; */
-  position: fixed;
-  left: 0px;
-  width: 100vh;
-  height: 65vh;
+  width: 675px;
+  position: absolute;
+  left: 20px;
 }
 
 #welcome-heading {
-  font-size: 24px;
+font-size: 24px;
+margin-top: 0px;
+margin-bottom: 550px;
 }
+
 
 #header {
   display: flex;
@@ -263,7 +169,7 @@
   align-items: center;
   text-decoration: none;
   color: #000;
-  background-color: lightgrey;
+  background-color: rgba(211, 211, 211, 0.2);
   transition: background-color 0.3s ease-in-out;
   padding: 10px;
 }
@@ -312,177 +218,6 @@ body {
   transform: translateY(0);
 }
 
-.dropdown {
-  position: relative;
-}
-
-.dropdown-toggle {
-  cursor: pointer;
-}
-
-  .dropdown-menu {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: lightgrey;
-    padding: 10px;
-    border-radius: 4px;
-    z-index: 10;
-    text-align: center;
-    transition: opacity 0.3s ease-in-out;
-    text-decoration: none;
-    margin-top: 0;
-    transform: translateX(17%);
-  }
-
-  .dropdown-menu li {
-    margin-bottom: 5px;
-    list-style-type: none;
-  }
-
-  .dropdown-menu button {
-  cursor: pointer;
-}
-
-  .dropdown-menu li a {
-    display: block;
-    padding: 5px 10px;
-    color: #000;
-    text-decoration: none;
-    transition: background-color 0.3s ease-in-out;
-  }
-
-  .dropdown-menu li:hover a {
-    background-color: lightblue !important;
-  }
-
-  .dropdown.active .dropdown-menu {
-    display: block;
-  }
-
-  .dropdown-menu li:hover {
-    background-color: lightblue !important;
-  }
-
-  .dropdown-menu li button:hover {
-  background-color: lightblue;
-}
-
-  .dropdown-button {
-  display: block;
-  width: 100%;
-  padding: 8px 16px;
-  text-align: left;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.dropdown-button:hover {
-  background-color: lightblue;
-}
-
-.dropdown-button:focus {
-  outline: none;
-  background-color: lightblue;
-}
-
-.dropdown-button:active {
-  background-color: lightblue;
-}
-
-
-#logout-button {
-  transition: transform 0.3s ease-in-out;
-}
-
-.dropdown:hover ~ #logout-button {
-  transform: translate(0, 40px);
-}
-
-
-/* ####################### */
-
-.dropdown-menu {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background-color: lightgrey;
-  padding: 10px;
-  border-radius: 4px;
-  z-index: 10;
-  text-align: center;
-  transition: opacity 0.3s ease-in-out;
-  text-decoration: none;
-  margin-top: 0;
-  transform: translateX(17%);
-}
-
-.dropdown-menu li {
-  margin-bottom: 5px;
-  list-style-type: none;
-}
-
-.dropdown-menu label {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  color: #ffffff;
-  text-decoration: none;
-  transition: background-color 0.3s;
-}
-
-.dropdown-menu li a {
-  display: block;
-  padding: 5px 10px;
-  color: #000;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background-color 0.3s ease-in-out;
-}
-
-.dropdown-menu li:hover a {
-  background-color: lightblue !important;
-}
-
-.dropdown.active .dropdown-menu {
-  display: block;
-}
-
-.dropdown-menu li:hover {
-  background-color: lightblue !important;
-}
-
-.dropdown-menu li button:hover {
-background-color: lightblue;
-}
-
-
-.dropdown-menu label:hover {
-background-color: lightblue;
-}
-
-.dropdown-menu li input:hover {
-background-color: lightblue;
-}
-
-.dropdown-menu input[type="radio"] {
-display: none;
-}
-
-.dropdown-menu input[type="radio"]:checked + label {
-font-weight: bold;
-}
-
-.dropdown-menu input[type="radio"]:checked + label::before {
-background-color: lightblue;
-border-color: #ffffff;
-}
-
-/* ################################ */
-
 #chat-icon {
   position: fixed;
   bottom: 20px;
@@ -505,7 +240,7 @@ border-color: #ffffff;
   position: absolute;
   bottom: 20px;
   right: 5px;
-  width: 370px;
+  width: 322px;
   background-color: #fff;
   display: none;
   padding: 20px;
@@ -593,17 +328,10 @@ border-color: #ffffff;
 }
 
 #chat-box {
-  height: 220px;
+  height: 240px;
   overflow: auto;
   margin-bottom: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
   padding: 10px;
 }
-
-
-/* .graph-element {
-  /* left: 0px; 
-  width: 100vh;
-  height: 55vh;
-} */

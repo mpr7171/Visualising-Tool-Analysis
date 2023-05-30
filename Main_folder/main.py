@@ -56,88 +56,157 @@ def sign_in_with_email_and_password(email, password, return_secure_token = True)
     return r.json()
 
 
-def get_analytics_info(year, branch, exam_type):
+def previous_year(curr_year,branch):
 
-    path = f'grades/{year}/{branch}'
-    
+    path_prev = f'grades/{int(curr_year)-1}/{branch}'
+    ref_prev = db.reference(path_prev)
+
+    path = f'grades/{curr_year}/{branch}'
     ref1 = db.reference(path)
 
     no_data = False
     disp_msg = ""
-
     data = ref1.get()
+    data_prev = ref_prev.get()
 
-    if data == None:
+    if data and data_prev == None:
         data = {}
         no_data  = True
-        disp_msg = "Please wait untill your respective faculty uploads the scores."
-        
-
+        disp_msg = "Please wait until your respective faculty upload the scores."
+    elif data == None:
+        data={}
+        no_data = True
+        disp_msg = "Please wait until your respective faculty upload the scores."
+    elif data_prev == None:
+        data={}
+        no_data = True
+        disp_msg = "Please wait until your respective faculty upload the scores."
+    
     courses = []
+    prev_course_scores_dic = {}
     course_scores_dic = {}
-
     curr_user_scores = []
     curr_user_perc = []
     graphs = []
 
-    if data == None:
+    if (data and data_prev) == None or data == None or data_prev == None:
         return (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc)
-
-    for k in data.keys():
-        courses.append(k)
-        curr_scores = []
-        course_scores = data[k]
-        for rollno in course_scores:    
-
-            c_score = course_scores[rollno]
-            curr_scores.append(c_score)
-
-        course_scores_dic[k] = curr_scores
-
-    num_pres = 0
     
+    for k in data.keys():
+        if k in data_prev.keys():
+            courses.append(k)
+            curr_scores = []
+            prev_scores = []
+            course_scores = data[k]
+            prev_course_scores = data_prev[k]
+            for rollno in course_scores:
+                c_score = course_scores[rollno]
+                curr_scores.append(c_score)
+            course_scores_dic[k] = curr_scores
+
+            for rollno in prev_course_scores:
+                p_score = prev_course_scores[rollno]
+                prev_scores.append(p_score)
+            prev_course_scores_dic[k] = prev_scores
+    
+    num_pres = 0
+    exam_type = 'endsem'
+
     for course in courses:
         curr_course_scores = course_scores_dic[course]
+        prev_course_scores = prev_course_scores_dic[course]
 
         curr_marks = []
-
-        cscore = 0  
-
+        prev_marks = []
+        cscore = 0
         flag = False
 
         for stud in curr_course_scores:
-
             if exam_type in stud:
-                flag = True
+                flag= True
                 curr_marks.append(stud[exam_type])
-
-
-                if stud['student_id'] == session["student_id"]:
+                if stud['student_id'] == session['student_id']:
                     curr_user_scores.append(stud[exam_type])
                     cscore = stud[exam_type]
-            
+        
+        for stud in prev_course_scores:
+            if exam_type in stud:
+                prev_marks.append(stud[exam_type])
                 
-        if flag:
-            num_pres += 1
-            curr_user_perc.append(calculate_percentage(your_score=cscore,scores=curr_marks))
 
+        if flag:
+            num_pres+=1
+            curr_user_perc.append(calculate_percentage(your_score=cscore, scores = curr_marks))
             mean = np.mean(curr_marks)
+            mean_prev = np.mean(prev_marks)
             std_dev = np.std(curr_marks)
+            std_dev_prev = np.std(prev_marks)
             x_values = np.linspace(mean - 3 * std_dev, mean + 3 * std_dev, 100)
             y_values = (1 / (std_dev * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x_values - mean) / std_dev) ** 2)
+            x_values_prev = np.linspace(mean_prev - 3 * std_dev_prev, mean_prev + 3 * std_dev_prev, 100)
+            y_values_prev = (1 / (std_dev_prev * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x_values_prev - mean_prev) / std_dev_prev) ** 2)
 
             percentiles = np.percentile(curr_marks, [50, 75, 90])
+            percentiles_prev = np.percentile(prev_marks, [50, 75, 90])
 
-            fig = go.Figure()
-            fig = make_subplots(rows=2, cols=1, row_heights=[0.5, 0.4],
-                    subplot_titles=(f"Distrbution of marks across for {course}", "Histogram of marks (in branch)"))
+            fig = make_subplots(rows=4, cols=1, subplot_titles=(f"Distrbution of marks across for {course}", 
+                                                                f"Distrbution of marks across for {course} of Previous Year",
+                                                                "Histogram of marks (in branch)", 
+                                                                "Histogram of marks (in branch) of Previous Year"))
+
+            # curr_scatter = go.Scatter(
+            #     x=x_values,
+            #     y=y_values,
+            #     mode='lines',
+            #     name='Normal Distribution'
+            # )
+
+            # curr_scatter.add_trace(go.Scatter(
+            #     x=[mean, mean],
+            #     y=[0, np.max(y_values)],
+            #     mode='lines',
+            #     name='Mean',
+            #     line=dict(dash='dash')
+            # )
+
+            # curr_scatter.add_trace(go.Scatter(
+            #     x=[np.max(curr_marks), np.max(curr_marks)],
+            #     y=[0, np.max(y_values)],
+            #     mode='lines',
+            #     name='Max score obtained',
+            #     line=dict(dash='dash')
+            # ))
+
+            # curr_scatter.add_trace(go.Scatter(
+            #     x=[percentiles[2], percentiles[2]],
+            #     y=[0, np.max(y_values)],
+            #     mode='lines',
+            #     name='90th Percentile',
+            #     line=dict(dash='dash')
+            # ))
+
+            # curr_scatter.add_trace(go.Scatter(
+            #     x=[cscore, cscore],
+            #     y=[0, np.max(y_values)],
+            #     mode='lines',
+            #     name='Your score',
+            #     line=dict(dash='solid')
+            # ))
+
+            # curr_scatter.update_layout(
+            #     title='Normal Distribution with Percentiles',
+            #     xaxis_title='Marks',
+            #     yaxis_title='Probability Density',
+            #     height=2400,
+            #     width=1600
+            # )
 
             fig.add_trace(go.Scatter(
                 x=x_values,
                 y=y_values,
                 mode='lines',
                 name='Normal Distribution'
-            ))
+            ), row=1, col=1)
 
             fig.add_trace(go.Scatter(
                 x=[mean, mean],
@@ -145,7 +214,7 @@ def get_analytics_info(year, branch, exam_type):
                 mode='lines',
                 name='Mean',
                 line=dict(dash='dash')
-            ))
+            ), row=1, col=1)
 
             fig.add_trace(go.Scatter(
                 x=[np.max(curr_marks), np.max(curr_marks)],
@@ -153,8 +222,7 @@ def get_analytics_info(year, branch, exam_type):
                 mode='lines',
                 name='Max score obtained',
                 line=dict(dash='dash')
-            ))
-
+            ), row=1, col=1)
 
             fig.add_trace(go.Scatter(
                 x=[percentiles[2], percentiles[2]],
@@ -162,7 +230,7 @@ def get_analytics_info(year, branch, exam_type):
                 mode='lines',
                 name='90th Percentile',
                 line=dict(dash='dash')
-            ))
+            ), row=1, col=1)
 
             fig.add_trace(go.Scatter(
                 x=[cscore, cscore],
@@ -170,42 +238,329 @@ def get_analytics_info(year, branch, exam_type):
                 mode='lines',
                 name='Your score',
                 line=dict(dash='solid')
-            ))
+            ), row=1, col=1)
 
             fig.update_layout(
-                title='Normal Distribution with Percentiles',
+                # title='Normal Distribution with Percentiles',
                 xaxis_title='Marks',
-                yaxis_title='Probability Density'
+                yaxis_title='Probability Density',
+                height=2400,
+                width=1600
             )
 
-            histogram = go.Histogram(
+
+            # prev_scatter = go.Scatter(
+            #     x=x_values_prev,
+            #     y=y_values_prev,
+            #     mode='lines',
+            #     name='Normal Distribution'
+            # )
+
+            # prev_scatter.add_trace(go.Scatter(
+            #     x=[mean_prev, mean_prev],
+            #     y=[0, np.max(y_values_prev)],
+            #     mode='lines',
+            #     name='Mean',
+            #     line=dict(dash='dash')
+            # ))
+
+            # prev_scatter.add_trace(go.Scatter(
+            #     x=[np.max(prev_marks), np.max(prev_marks)],
+            #     y=[0, np.max(y_values_prev)],
+            #     mode='lines',
+            #     name='Max score obtained',
+            #     line=dict(dash='dash')
+            # ))
+
+            # prev_scatter.add_trace(go.Scatter(
+            #         x=[percentiles_prev[2], percentiles_prev[2]],
+            #         y=[0, np.max(y_values_prev)],
+            #         mode='lines',
+            #         name='90th Percentile',
+            #         line=dict(dash='dash')
+            # ))
+
+            # prev_scatter.update_layout(
+            #     title='Normal Distribution with Percentiles (Previous Year)',
+            #     xaxis_title='Marks',
+            #     yaxis_title='Probability Density',
+            #     height=2400,
+            #     width=1600
+            # )
+            fig.add_trace(go.Scatter(
+                x=x_values_prev,
+                y=y_values_prev,
+                mode='lines',
+                name='Normal Distribution'
+            ), row=2, col=1)
+
+            fig.add_trace(go.Scatter(
+                x=[mean_prev, mean_prev],
+                y=[0, np.max(y_values_prev)],
+                mode='lines',
+                name='Mean',
+                line=dict(dash='dash')
+            ), row=2, col=1)
+
+            fig.add_trace(go.Scatter(
+                x=[np.max(prev_marks), np.max(prev_marks)],
+                y=[0, np.max(y_values_prev)],
+                mode='lines',
+                name='Max score obtained',
+                line=dict(dash='dash')
+            ), row=2, col=1)
+
+            fig.add_trace(go.Scatter(
+                    x=[percentiles[2], percentiles[2]],
+                    y=[0, np.max(y_values_prev)],
+                    mode='lines',
+                    name='90th Percentile',
+                    line=dict(dash='dash')
+                ))
+
+            fig.update_layout(
+                # title='Normal Distribution with Percentiles (Previous Year)',
+                xaxis_title='Marks',
+                yaxis_title='Probability Density',
+                height=2400,
+                width=1600
+            )
+
+
+            # histogram = go.Histogram(
+            #     x=curr_marks,
+            #     nbinsx=10,
+            #     name='Marks Distribution'
+            # )
+
+            # histogram.update_layout(
+            #     title='Histogram of Marks',
+            #     xaxis_title='Marks',
+            #     yaxis_title='Frequency'
+            #     height=800,
+            #     width=1200
+            # )
+
+            # histogram_prev = go.Histogram(
+            #     x=prev_marks,
+            #     nbinsx=10,
+            #     name='Marks Distribution (Previous Year)'
+            # )
+
+            # histogram_prev.update_layout(
+            #     title='Histogram of Marks (Previous Year)',
+            #     xaxis_title='Marks',
+            #     yaxis_title='Frequency',
+            #     height=2400,
+            #     width=1600
+            # )
+            fig.add_trace(go.Histogram(
                 x=curr_marks,
                 nbinsx=10,
                 name='Marks Distribution'
-            )
-            fig.update_xaxes(title_text="Marks")
-            fig.update_yaxes(title_text="Frequency")
+            ), row=3, col=1)
 
-            fig.add_trace(histogram, row=2, col=1)
+            # fig.update_layout(
+            #     # title='Histogram of Marks',
+            #     xaxis_title='Marks',
+            #     yaxis_title='Frequency'
+            #     height=800,
+            #     width=1200
+            # )
+
+            fig.add_trace(go.Histogram(
+                x=prev_marks,
+                nbinsx=10,
+                name='Marks Distribution (Previous Year)'
+            ), row=4, col=1)
 
             fig.update_layout(
-            title='Histogram of marks',
-            xaxis_title='Marks',
-            yaxis_title='Frequency',
-            height=800, width=1200
+                # title='Histogram of Marks (Previous Year)',
+                xaxis_title='Marks',
+                yaxis_title='Frequency',
+                height=2400,
+                width=1600
             )
+            # fig.update_xaxes(title_text="Marks")
+            # fig.update_yaxes(title_text="Frequency")
+            # fig.update_layout(
+            # title='Histogram of marks',
+            # xaxis_title='Marks',
+            # yaxis_title='Frequency',
+            # height=800, width=1200
+            # )
+            # fig.add_trace(curr_scatter,row=1,col=1)
+            # fig.add_trace(prev_scatter,row=2,col=1)
+            # fig.add_trace(histogram,row=3,col=1)
+            # fig.add_trace(histogram_prev,row=4,col=1)
+            
 
             graph_html = fig.to_html(full_html=False, include_plotlyjs=True)
             graphs.append(graph_html)
 
+
+        if num_pres == 0:
+            no_data = True
+
+            disp_msg = "Please wait until your respective faculty uploads the scores."
+
+        return (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc)
+
+
+def get_analytics_info(year, branch, exam_type):
+    if exam_type=='previousyear':
+        (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc) = previous_year(year,branch)
+        return (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc)
+    else:
+        path = f'grades/{year}/{branch}'
         
-    
-    if num_pres == 0:
-        no_data = True
+        ref1 = db.reference(path)
 
-        disp_msg = "Please wait untill your respective faculty uploads the scores."
+        no_data = False
+        disp_msg = ""
 
-    return (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc)
+        data = ref1.get()
+
+        if data == None:
+            data = {}
+            no_data  = True
+            disp_msg = "Please wait until your respective faculty upload the scores."
+        
+            
+
+        courses = []
+        course_scores_dic = {}
+
+        curr_user_scores = []
+        curr_user_perc = []
+        graphs = []
+
+        if data == None:
+            return (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc)
+
+        for k in data.keys():
+            courses.append(k)
+            curr_scores = []
+            course_scores = data[k]
+            for rollno in course_scores:    
+
+                c_score = course_scores[rollno]
+                curr_scores.append(c_score)
+
+            course_scores_dic[k] = curr_scores
+
+        num_pres = 0
+        
+        for course in courses:
+            curr_course_scores = course_scores_dic[course]
+
+            curr_marks = []
+
+            cscore = 0  
+
+            flag = False
+
+            for stud in curr_course_scores:
+
+                if exam_type in stud:
+                    flag = True
+                    curr_marks.append(stud[exam_type])
+
+
+                    if stud['student_id'] == session["student_id"]:
+                        curr_user_scores.append(stud[exam_type])
+                        cscore = stud[exam_type]
+                
+                    
+            if flag:
+                num_pres += 1
+                curr_user_perc.append(calculate_percentage(your_score=cscore,scores=curr_marks))
+
+                mean = np.mean(curr_marks)
+                std_dev = np.std(curr_marks)
+                x_values = np.linspace(mean - 3 * std_dev, mean + 3 * std_dev, 100)
+                y_values = (1 / (std_dev * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x_values - mean) / std_dev) ** 2)
+
+                percentiles = np.percentile(curr_marks, [50, 75, 90])
+
+                fig = go.Figure()
+                fig = make_subplots(rows=2, cols=1, row_heights=[0.5, 0.4],
+                        subplot_titles=(f"Distrbution of marks across for {course}", "Histogram of marks (in branch)"))
+
+                fig.add_trace(go.Scatter(
+                    x=x_values,
+                    y=y_values,
+                    mode='lines',
+                    name='Normal Distribution'
+                ))
+
+                fig.add_trace(go.Scatter(
+                    x=[mean, mean],
+                    y=[0, np.max(y_values)],
+                    mode='lines',
+                    name='Mean',
+                    line=dict(dash='dash')
+                ))
+
+                fig.add_trace(go.Scatter(
+                    x=[np.max(curr_marks), np.max(curr_marks)],
+                    y=[0, np.max(y_values)],
+                    mode='lines',
+                    name='Max score obtained',
+                    line=dict(dash='dash')
+                ))
+
+
+                fig.add_trace(go.Scatter(
+                    x=[percentiles[2], percentiles[2]],
+                    y=[0, np.max(y_values)],
+                    mode='lines',
+                    name='90th Percentile',
+                    line=dict(dash='dash')
+                ))
+
+                fig.add_trace(go.Scatter(
+                    x=[cscore, cscore],
+                    y=[0, np.max(y_values)],
+                    mode='lines',
+                    name='Your score',
+                    line=dict(dash='solid')
+                ))
+
+                fig.update_layout(
+                    title='Normal Distribution with Percentiles',
+                    xaxis_title='Marks',
+                    yaxis_title='Probability Density'
+                )
+
+                histogram = go.Histogram(
+                    x=curr_marks,
+                    nbinsx=10,
+                    name='Marks Distribution'
+                )
+                fig.update_xaxes(title_text="Marks")
+                fig.update_yaxes(title_text="Frequency")
+
+                fig.add_trace(histogram, row=2, col=1)
+
+                fig.update_layout(
+                title='Histogram of marks',
+                xaxis_title='Marks',
+                yaxis_title='Frequency',
+                height=800, width=1200
+                )
+
+                graph_html = fig.to_html(full_html=False, include_plotlyjs=True)
+                graphs.append(graph_html)
+
+            
+        
+        if num_pres == 0:
+            no_data = True
+
+            disp_msg = "Please wait untill your respective faculty uploads the scores."
+
+        return (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc)
 
 
 
@@ -612,7 +967,23 @@ def endsem():
                         zip=zip, 
                         no_data = no_data, disp_msg = disp_msg)
 
+@app.route('/prevyear')
+def prevyear():
+    year = session['year']
+    branch = session['branch']
 
+    # path = f'grades/{year}/{branch}'
+    no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc = get_analytics_info(year,branch, exam_type='previousyear')
+    return render_template('index_analytics_pyear.html', 
+                        courses=courses,
+                        graphs=graphs,
+                        curr_user_scores = curr_user_scores ,
+                        curr_user_perc = curr_user_perc, 
+                        zip=zip, 
+                        no_data = no_data,
+                        disp_msg = disp_msg)
+    # implement the function for grabbing and comapring previous year grades.
+    
 
 #######################  FACULTY  ##########################
 
@@ -1083,12 +1454,8 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_endsem, highest = highest, lowest = lowest, 
                            course = subject_code, type = 'End Sem', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
                            asc = sorted_array, counts = counts_above_percentiles)
-        
-    
+
     return "Analytics cannot be viewed"
-
-
-            
             
             
             

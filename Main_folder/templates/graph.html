@@ -35,7 +35,11 @@
     <p> </p>
     <div class="container">
         <div id="graph2"></div>
-        <p> The Normal Distribution of the marks with 75, 90, 95 th percentiles </p>
+       
+        
+        <p> Number of students above 75 percentile is {{counts[0]}} </p>
+        <p> Number of students above 90 percentile is {{counts[1]}} </p>
+        <p> Number of students above 95 percentile is {{counts[2]}} </p>
         <script>
             // Retrieve the graph JSON data from Flask
             var graphJsonData2 = '{{ graph2_json | safe }}';

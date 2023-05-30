@@ -14,6 +14,7 @@ from datetime import datetime
 import logging
 from functions import *
 
+
 FIREBASE_WEB_API_KEY = "AIzaSyC0aEymSwOknoaBuMIYPrzU_JRLXmJF0dU"
 rest_api_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
 
@@ -24,7 +25,7 @@ app.secret_key = '666'
 auth = firebase_admin.auth
 
 app.secret_key='secret'
-cred = credentials.Certificate("se-test-7f7e1-firebase-adminsdk-auhlb-6adf0cbd2c.json")
+cred = credentials.Certificate("Main_folder\\se-test-7f7e1-firebase-adminsdk-auhlb-6adf0cbd2c.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': "https://se-test-7f7e1-default-rtdb.firebaseio.com"
 })
@@ -667,11 +668,22 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
             yaxis_title='Probability Density',
             showlegend=True
         )
-        
-        
-        # Calculate the percentiles
-        colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
+        sample = np.random.normal(avg_m1, std, len(minor1_grades))
+
         percentiles = [75, 90, 95]
+
+        counts_above_percentiles = []
+
+        # Calculate the percentiles and the number of values above each percentile
+        for percentile in percentiles:
+            percentile_value = np.percentile(sample, percentile)
+            count_above_percentile = sum(value > percentile_value for value in sample)
+            counts_above_percentiles.append(count_above_percentile)
+            
+            
+            # Calculate the percentiles
+        colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
+        percentiles = [ 75, 90, 95]
         percentile_values = np.percentile(minor1_grades, percentiles)
 
         for percentile, value, color in zip(percentiles, percentile_values, colors):
@@ -687,18 +699,21 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
             )
 
         # Add invisible scatter traces for legends
-        for percentile, color in zip(percentiles, colors):
             fig2.add_trace(
                 go.Scatter(
-                    x=[],
-                    y=[],
+                    x=[None],
+                    y=[None],
                     mode='markers',
-                    marker=dict(color=color, opacity=0),
+                    marker=dict(color=color),
                     name=f"{percentile}th Percentile"
                 )
             )
 
-        fig2.update_layout(showlegend=True)  # Display legends in the graph
+        fig2.update_layout(showlegend=True)
+        
+        
+        
+        
         hist, bins = np.histogram(minor1_grades)
 
         # Find the bin with the highest count
@@ -750,7 +765,7 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         
         return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m1, highest = highest, lowest = lowest, 
                            course = subject_code, type = 'Minor 1', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
-                           asc = sorted_array)
+                           asc = sorted_array, counts = counts_above_percentiles)
     
     
     
@@ -796,8 +811,22 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         
         
         # Calculate the percentiles
-        colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
+        sample = np.random.normal(avg_m2, std, len(minor2_grades))
+
         percentiles = [75, 90, 95]
+
+        counts_above_percentiles = []
+
+        # Calculate the percentiles and the number of values above each percentile
+        for percentile in percentiles:
+            percentile_value = np.percentile(sample, percentile)
+            count_above_percentile = sum(value > percentile_value for value in sample)
+            counts_above_percentiles.append(count_above_percentile)
+            
+            
+            # Calculate the percentiles
+        colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
+        percentiles = [ 75, 90, 95]
         percentile_values = np.percentile(minor2_grades, percentiles)
 
         for percentile, value, color in zip(percentiles, percentile_values, colors):
@@ -810,10 +839,23 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
                 y0=0,
                 y1=max(y),
                 line=dict(color=color, width=2, dash="dash"),
-                name=f"{percentile}th Percentile"
             )
-        # Update the layout to show the legend
+
+        # Add invisible scatter traces for legends
+            fig2.add_trace(
+                go.Scatter(
+                    x=[None],
+                    y=[None],
+                    mode='markers',
+                    marker=dict(color=color),
+                    name=f"{percentile}th Percentile"
+                )
+            )
+
+        
         fig2.update_layout(showlegend=True)
+    
+    
         
         hist, bins = np.histogram(minor2_grades)
 
@@ -874,9 +916,9 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         Q3 = np.percentile(minor2_grades, 75)
         sorted_array = np.sort(minor2_grades)[::-1]
         
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m1, highest = highest, lowest = lowest, 
+        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m2, highest = highest, lowest = lowest, 
                            course = subject_code, type = 'Minor 2', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
-                           asc = sorted_array)
+                           asc = sorted_array, counts = counts_above_percentiles)
     
     
     
@@ -935,8 +977,21 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         )
         
         # Calculate the percentiles
+        sample = np.random.normal(avg_endsem, std, len(end_sem_grades))
+
+        percentiles = [ 75, 90, 95]
+
+        counts_above_percentiles = []
+
+        # Calculate the percentiles and the number of values above each percentile
+        for percentile in percentiles:
+            percentile_value = np.percentile(sample, percentile)
+            count_above_percentile = sum(value > percentile_value for value in sample)
+            counts_above_percentiles.append(count_above_percentile)
+            
+            # Calculate the percentiles
         colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
-        percentiles = [75, 90, 95]
+    
         percentile_values = np.percentile(end_sem_grades, percentiles)
 
         for percentile, value, color in zip(percentiles, percentile_values, colors):
@@ -949,10 +1004,21 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
                 y0=0,
                 y1=max(y),
                 line=dict(color=color, width=2, dash="dash"),
-                name=f"{percentile}th Percentile"
             )
-        # Update the layout to show the legend
-        fig2.update_layout(showlegend=True)
+
+        # Add invisible scatter traces for legends
+            fig2.add_trace(
+                go.Scatter(
+                    x=[None],
+                    y=[None],
+                    mode='markers',
+                    marker=dict(color=color),
+                    name=f"{percentile}th Percentile"
+                )
+            )
+
+        
+        fig2.update_layout(showlegend=True) 
         
         
         hist, bins = np.histogram(end_sem_grades)
@@ -1014,9 +1080,9 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         Q3 = np.percentile(end_sem_grades, 75)
         sorted_array = np.sort(end_sem_grades)[::-1]
         
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m1, highest = highest, lowest = lowest, 
+        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_endsem, highest = highest, lowest = lowest, 
                            course = subject_code, type = 'End Sem', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
-                           asc = sorted_array)
+                           asc = sorted_array, counts = counts_above_percentiles)
         
     
     return "Analytics cannot be viewed"
@@ -1173,7 +1239,7 @@ def faculty_dashboard():
     keys = list(temp_b.keys())
 
     for i in range(len(keys)):
-        batch.append(db.reference(f'faculty/{name}/Courses/' + keys[i]).get())
+        batch.append(db.reference(f'faculty/' + db_name + '/Courses/' + keys[i]).get())
         
     
     return render_template('index_faculty_db.html', prof_name = capitalized_name, course_list = course_list, course_names = course_names, batch = batch)
@@ -1239,11 +1305,23 @@ def minor1_analytics():
         yaxis_title='Probability Density',
         showlegend=True
     )
+    
+    sample = np.random.normal(avg_m1, std, len(minor1_grades))
+
+    percentiles = [75, 90, 95]
+
+    counts_above_percentiles = []
+
+    # Calculate the percentiles and the number of values above each percentile
+    for percentile in percentiles:
+        percentile_value = np.percentile(sample, percentile)
+        count_above_percentile = sum(value > percentile_value for value in sample)
+        counts_above_percentiles.append(count_above_percentile)
         
         
         # Calculate the percentiles
     colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
-    percentiles = [75, 90, 95]
+    percentiles = [ 75, 90, 95]
     percentile_values = np.percentile(minor1_grades, percentiles)
 
     for percentile, value, color in zip(percentiles, percentile_values, colors):
@@ -1258,14 +1336,13 @@ def minor1_analytics():
             line=dict(color=color, width=2, dash="dash"),
         )
 
-        # Add invisible scatter traces for legends
-    for percentile, color in zip(percentiles, colors):
+    # Add invisible scatter traces for legends
         fig2.add_trace(
             go.Scatter(
-                x=[],
-                y=[],
+                x=[None],
+                y=[None],
                 mode='markers',
-                marker=dict(color=color, opacity=0),
+                marker=dict(color=color),
                 name=f"{percentile}th Percentile"
             )
         )
@@ -1316,7 +1393,7 @@ def minor1_analytics():
     
     return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m1, highest = highest, lowest = lowest, 
                            course = course, type = 'Minor1', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
-                           asc = sorted_array)
+                           asc = sorted_array, counts = counts_above_percentiles)
     
     
    
@@ -1383,11 +1460,24 @@ def minor2_analytics():
         yaxis_title='Probability Density',
         showlegend=True
     )
+    
+    
+    sample = np.random.normal(avg_m2, std, len(minor2_grades))
+
+    percentiles = [75, 90, 95]
+
+    counts_above_percentiles = []
+
+    # Calculate the percentiles and the number of values above each percentile
+    for percentile in percentiles:
+        percentile_value = np.percentile(sample, percentile)
+        count_above_percentile = sum(value > percentile_value for value in sample)
+        counts_above_percentiles.append(count_above_percentile)
         
         
         # Calculate the percentiles
     colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
-    percentiles = [75, 90, 95]
+    percentiles = [ 75, 90, 95]
     percentile_values = np.percentile(minor2_grades, percentiles)
 
     for percentile, value, color in zip(percentiles, percentile_values, colors):
@@ -1400,10 +1490,23 @@ def minor2_analytics():
             y0=0,
             y1=max(y),
             line=dict(color=color, width=2, dash="dash"),
-            name=f"{percentile}th Percentile"
         )
-        # Update the layout to show the legend
-    fig2.update_layout(showlegend=True)
+
+    # Add invisible scatter traces for legends
+        fig2.add_trace(
+            go.Scatter(
+                x=[None],
+                y=[None],
+                mode='markers',
+                marker=dict(color=color),
+                name=f"{percentile}th Percentile"
+            )
+        )
+
+    
+    fig2.update_layout(showlegend=True)  # Display legends in the graph
+    
+    
     
     
     hist, bins = np.histogram(minor2_grades)
@@ -1450,9 +1553,9 @@ def minor2_analytics():
     highest = minor2_grades.max()
     lowest = minor2_grades.min()
     
-    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m1, highest = highest, lowest = lowest, 
+    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m2, highest = highest, lowest = lowest, 
                            course = course, type = 'Minor 2', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
-                           asc = sorted_array)
+                           asc = sorted_array,counts = counts_above_percentiles)
     
     
     
@@ -1520,10 +1623,22 @@ def endsem_analytics():
         yaxis_title='Probability Density',
         showlegend=True
     )
+    
+    sample = np.random.normal(avg_endsem, std, len(end_sem_grades))
+
+    percentiles = [ 75, 90, 95]
+
+    counts_above_percentiles = []
+
+    # Calculate the percentiles and the number of values above each percentile
+    for percentile in percentiles:
+        percentile_value = np.percentile(sample, percentile)
+        count_above_percentile = sum(value > percentile_value for value in sample)
+        counts_above_percentiles.append(count_above_percentile)
         
         # Calculate the percentiles
     colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
-    percentiles = [75, 90, 95]
+   
     percentile_values = np.percentile(end_sem_grades, percentiles)
 
     for percentile, value, color in zip(percentiles, percentile_values, colors):
@@ -1536,10 +1651,21 @@ def endsem_analytics():
             y0=0,
             y1=max(y),
             line=dict(color=color, width=2, dash="dash"),
-            name=f"{percentile}th Percentile"
         )
-        # Update the layout to show the legend
-    fig2.update_layout(showlegend=True)
+
+    # Add invisible scatter traces for legends
+        fig2.add_trace(
+            go.Scatter(
+                x=[None],
+                y=[None],
+                mode='markers',
+                marker=dict(color=color),
+                name=f"{percentile}th Percentile"
+            )
+        )
+
+    
+    fig2.update_layout(showlegend=True)  # Display legends in the graph
     
     hist, bins = np.histogram(end_sem_grades)
 
@@ -1576,9 +1702,9 @@ def endsem_analytics():
     highest = end_sem_grades.max()
     lowest = end_sem_grades.min()
     
-    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m1, highest = highest, lowest = lowest, 
+    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_endsem, highest = highest, lowest = lowest, 
                            course = course, type = 'End Sem', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
-                           asc = sorted_array)
+                           asc = sorted_array, counts = counts_above_percentiles)
     
     
 

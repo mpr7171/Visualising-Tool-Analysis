@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Analytics</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles_graph.css') }}">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
+
 <body>
 
     <div class="container">
@@ -37,14 +39,14 @@
             </div>
 
             <br><br><br>
-            
+
             <div style="margin: 20px; font-size: 16px; font-family: Verdana, Geneva, Tahoma, sans-serif;">
                 <p> The highest marks in the {{course}} {{type}} is {{highest}}</p>
                 <p> The lowest marks in the {{course}} {{type}} is {{lowest}}</p>
                 <p> The average marks are {{avg}} </p>
                 <h3> The top 3 marks in the {{course}} {{type}} exam is {{asc[0]}} , {{asc[1]}}, {{asc[2]}} </h3>
             </div>
-            
+
 
             <div class="graphcontainer">
                 <div id="graph1"></div>
@@ -59,7 +61,7 @@
                         Plotly.newPlot('graph1', graphData.data, graphData.layout);
                     </script>
                 </div>
-                
+
             </div>
             <p> </p>
             <div class="graphcontainer">
@@ -70,8 +72,8 @@
                     <p> Number of students above 90 percentile is {{counts[1]}} </p>
                     <p> Number of students above 95 percentile is {{counts[2]}} </p>
                 </div>
-                
-                
+
+
                 <script>
                     // Retrieve the graph JSON data from Flask
                     var graphJsonData2 = '{{ graph2_json | safe }}';
@@ -84,7 +86,8 @@
             <div class="graphcontainer">
                 <div id="graph3"></div>
                 <div style="text-align: center;">
-                    <p> Most of the students lie in the region of {{start}} and {{end}} and the number of students in that region are {{high_freq_count}} </p>
+                    <p> Most of the students lie in the region of {{start}} and {{end}} and the number of students in
+                        that region are {{high_freq_count}} </p>
                     <script>
                         // Retrieve the graph JSON data from Flask
                         var graphJsonData3 = '{{ graph3_json | safe }}';
@@ -94,16 +97,9 @@
                         Plotly.newPlot('graph3', graphData3.data, graphData3.layout);
                     </script>
                 </div>
-                
-                
-            </div>
 
-            <td><button onclick = "redirectToHomePage()" class="button">Go Back Home</button></td>
-            <script>
-                function redirectToHomePage(){
-                    window.location.href = "/faculty_dashboard";
-                }
-            </script>
+
+            </div>
         </div>
     </div>
 
@@ -111,4 +107,5 @@
     <script src="{{ url_for('static', filename='script_analytics_redirect.js') }}"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </body>
+
 </html>

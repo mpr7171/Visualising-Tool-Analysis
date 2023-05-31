@@ -1,0 +1,516 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px;
+}
+
+:root {
+    --blue: #c1d3fe;
+    --white: #fff;
+    --grey: #f5f5f5;
+    --black1: #222;
+    --black2: #999;
+}
+
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.container {
+    position: relative;
+    width: 100%;
+}
+
+.navigation {
+    position: fixed;
+    width: 300px;
+    height: 100%;
+    background: linear-gradient(to bottom, #c1d3fe, #edf2fb);
+    border-left: 10px solid linear-gradient(to bottom, #c1d3fe, #edf2fb);
+    overflow: hidden;
+}
+
+.navigation.active {
+    width: 80px;
+    transform: 0.5s;
+}
+
+.navigation ul {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+.navigation ul li {
+    position: relative;
+    width: 100%;
+    list-style: none;
+    /* border-top-left-radius: 30px;
+    border-bottom-left-radius: 30px; */
+}
+
+.navigation ul li:hover {
+    background-color: white;
+}
+
+.navigation ul li:nth-child(1) {
+    margin-bottom: 40px;
+    pointer-events: none;
+}
+
+.navigation ul li a {
+    position: relative;
+    display: block;
+    width: 100%;
+    display: flex;
+    text-decoration: none;
+    color: black;
+}
+
+.navigation ul li:hover a {
+    color: linear-gradient(to bottom, #c1d3fe, #edf2fb);
+}
+
+.navigation ul li a .icon {
+    position: relative;
+    display: block;
+    min-width: 60px;
+    height: 60px;
+    line-height: 60px;
+    text-align: center;
+}
+
+.navigation ul li a .icon ion-icon {
+    font-size: 1.75em;
+}
+
+.navigation ul li a .title {
+    position: relative;
+    display: block;
+    padding: 0 10px;
+    height: 60px;
+    line-height: 60px;
+    text-align: start;
+    white-space: nowrap;
+}
+
+.navigation ul li:hover a::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: 0;
+    width: 50px;
+    height: 50px;
+    background: transparent;
+    /* border-radius: 50%; */
+    /* box-shadow: 35px 35px 0 10px black; */
+    pointer-events: none;
+}
+
+.navigation ul li:hover a::after {
+    content: '';
+    position: absolute;
+    bottom: -50px;
+    right: 0;
+    width: 50px;
+    height: 50px;
+    background: transparent;
+    /* border-radius: 50%; */
+    /* box-shadow: 35px -35px 0 10px black; */
+    pointer-events: none;
+}
+
+.heading {
+    white-space: nowrap;
+    /* Prevent text from wrapping */
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    /* overflow: hidden; Hide any overflow */
+    /* text-overflow: ellipsis; Show ellipsis (...) for overflowed text */
+}
+
+
+/* main*/
+.main {
+    position: absolute;
+    width: calc(100% - 300px);
+    left: 300px;
+    min-height: 100vh;
+    background-color: var(--white);
+    transition: 0.5s;
+    padding: 20px;
+}
+
+.main.active {
+    width: calc(100% - 80px);
+    left: 80px;
+}
+
+.topbar {
+    width: 100%;
+    height: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+}
+
+.toggle {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5em;
+    cursor: pointer;
+}
+
+.heading {
+    position: relative;
+    width: 400px;
+    margin: 0 10px;
+    font-size: 25px;
+    font-weight: 600;
+}
+
+.user {
+    position: relative;
+    width: 40px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.user img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cardBox {
+    position: relative;
+    width: 100%;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 30px;
+}
+
+.cardBox .card {
+    position: relative;
+    background: var(--white);
+    padding: 30px;
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+    box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+    border-radius: 15px;
+}
+
+.cardBox .card .property {
+    position: relative;
+    font-weight: 500;
+    font-size: 2.5em;
+    color: linear-gradient(to bottom, #c1d3fe, #edf2fb);
+}
+
+.cardBox .card .propertyname {
+    color: var(--black2);
+    font-size: 1.1em;
+    margin-top: 5px;
+}
+
+.cardBox .card .iconBox {
+    font-size: 3.5em;
+    color: var(--black2);
+}
+
+.cardBox .card:hover {
+    background: linear-gradient(to bottom, #c1d3fe, #edf2fb);
+}
+
+.cardBox .card:hover .property,
+.cardBox .card:hover .propertyname,
+.cardBox .card:hover .iconBox {
+    color: var(--white);
+}
+
+.details {
+    position: relative;
+    width: 100%;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-gap: 30px;
+}
+
+.details .courses {
+    position: relative;
+    display: grid;
+    min-height: 500px;
+    background-color: var(--white);
+    padding: 20px;
+    box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+    border-radius: 20px;
+}
+
+.details .cardheader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.cardheader h2 {
+    font-weight: 600;
+    color: linear-gradient(to bottom, #c1d3fe, #edf2fb);
+}
+
+.btn {
+    position: relative;
+    padding: 5px 10px;
+    background: linear-gradient(to bottom, #c1d3fe, #edf2fb);
+    text-decoration: none;
+    color: var(--white);
+    border-radius: 6px;
+}
+
+.details table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.details table thead td {
+    font-weight: 600;
+
+}
+
+.details .courses table tr {
+    color: var(--black1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.details .courses table tbody tr:hover {
+    background: linear-gradient(to bottom, #c1d3fe, #edf2fb);
+    color: var(--white);
+}
+
+.details .courses table tr:last-child {
+    border-bottom: none;
+}
+
+.details .courses table tr td:nth-last-child(1) {
+    text-align: end;
+}
+
+.details .courses table tr td {
+    text-align: center;
+}
+
+.uploadbtn {
+    position: relative;
+    background-color: #0a0a23;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.uploadbtn:hover {
+    background-color: #002ead;
+    transition: 0.7s;
+}
+
+.uploadbtn:focus {
+    outline-color: transparent;
+    outline-style: solid;
+    box-shadow: 0 0 0 4px #5a01a7;
+}
+
+.uploadbtn:active {
+    background-color: #ffbf00;
+}
+
+.analysisbtn {
+    position: relative;
+    background-color: #0a0a23;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.analysisbtn:hover {
+    background-color: #002ead;
+    transition: 0.7s;
+}
+
+.analysisbtn:focus {
+    outline-color: transparent;
+    outline-style: solid;
+    box-shadow: 0 0 0 4px #5a01a7;
+}
+
+.analysisbtn:active {
+    background-color: #ffbf00;
+}
+
+.tableclass td {
+    padding: 3px;
+    margin: 3px;
+}
+
+#scorex-mobile {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+    background-color: white;
+    position: relative;
+    margin-left: -30px;
+}
+
+#score-logo-mobile {
+    width: 180px;
+    height: 140;
+    /* margin: 2px auto; */
+    /* padding: 10px; */
+    /* margin-top: -30px; */
+
+}
+
+#chat-icon {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: black;
+    color: white;
+    font-size: 24px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+}
+
+/* Chat Interface */
+#chat-interface {
+    position: absolute;
+    bottom: 20px;
+    right: 5px;
+    width: 322px;
+    background-color: #fff;
+    display: none;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+#close-button {
+    position: absolute;
+    top: -5px;
+    right: 5px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+#chat-interface h2 {
+    margin-bottom: 10px;
+}
+
+#chat-interface p {
+    margin-bottom: 20px;
+}
+
+#chat-interface form {
+    display: flex;
+    flex-direction: column;
+    margin-left: -30px;
+}
+
+#chat-interface input[type="text"],
+#chat-interface textarea {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+#chat-interface button {
+    padding: 10px;
+    background-color: #555;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#chat-icon.active {
+    background-color: lightgray;
+}
+
+#chat-interface form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.input-container {
+    display: flex;
+    align-items: center;
+}
+
+#chat-input-container {
+    display: flex;
+    align-items: center;
+}
+
+#chat-input {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+    outline: none;
+}
+
+#send-button {
+    padding: 2px 20px;
+    background-color: #555;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+    margin-top: -10px;
+}
+
+#chat-box {
+    height: 240px;
+    overflow: auto;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.graphcontainer {
+    margin-bottom: 20px;
+    border: 1px solid black;
+    padding: 10px;
+}
+
+p{
+    padding: 10px;
+}

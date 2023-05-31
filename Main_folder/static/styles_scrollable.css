@@ -38,20 +38,20 @@
 } */
 #dashboard {
   background: linear-gradient(to bottom, #c1d3fe, #edf2fb);
-    padding: 5px;
-    flex: 0.1;
-    transition: background-color 0.3s ease-in-out;
-    animation: fadeIn 0.5s ease-in-out 0.5s forwards;
-    margin-right: 0px;
-    transform: translateX(0);
-  }
+  padding: 5px;
+  flex: 0.1;
+  transition: background-color 0.3s ease-in-out;
+  animation: fadeIn 0.5s ease-in-out 0.5s forwards;
+  margin-right: 0px;
+  transform: translateX(0);
+}
 
-  #dashboard.flex {
-    flex: 0.01;
-    margin-right: 0;
-    transition: flex 0.3s ease-in-out;
-    transform: translateX(-100%);
-  }
+#dashboard.flex {
+  flex: 0.01;
+  margin-right: 0;
+  transition: flex 0.3s ease-in-out;
+  transform: translateX(-100%);
+}
 
 #header {
   display: flex;
@@ -106,7 +106,7 @@
   align-items: center;
   text-decoration: none;
   color: #000;
-  background-color: rgba(211, 211, 211, 0.2);
+  background-color: rgba(211, 211, 211, 0);
   transition: background-color 0.3s ease-in-out;
   padding: 10px;
 }
@@ -151,6 +151,7 @@ body {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -191,7 +192,7 @@ body {
   font-family: 'Poppins', sans-serif;
 }
 
-:root{
+:root {
   --blue: #287bff;
   --white: #fff;
   --grey: #f5f5f5;
@@ -199,17 +200,17 @@ body {
   --black2: #999;
 }
 
-body{
+body {
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-.container{
+.container {
   position: relative;
   width: 100%;
 }
 
-.navigation{
+.navigation {
   position: fixed;
   width: 300px;
   height: 100%;
@@ -219,19 +220,19 @@ body{
   overflow: hidden;
 }
 
-.navigation.active{
+.navigation.active {
   width: 80px;
   transform: 0.5s;
 }
 
-.navigation ul{
+.navigation ul {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
 }
 
-.navigation ul li{
+.navigation ul li {
   position: relative;
   width: 100%;
   list-style: none;
@@ -239,16 +240,16 @@ body{
   border-bottom-left-radius: 30px;
 }
 
-.navigation ul li:hover{
+.navigation ul li:hover {
   background-color: var(--white);
 }
 
-.navigation ul li:nth-child(1){
+.navigation ul li:nth-child(1) {
   margin-bottom: 40px;
   pointer-events: none;
 }
 
-.navigation ul li a{
+.navigation ul li a {
   position: relative;
   display: block;
   width: 100%;
@@ -257,11 +258,11 @@ body{
   color: var(--white);
 }
 
-.navigation ul li:hover a{
+.navigation ul li:hover a {
   color: var(--blue);
 }
 
-.navigation ul li a .icon{
+.navigation ul li a .icon {
   position: relative;
   display: block;
   min-width: 60px;
@@ -270,11 +271,11 @@ body{
   text-align: center;
 }
 
-.navigation ul li a .icon ion-icon{
+.navigation ul li a .icon ion-icon {
   font-size: 1.75em;
 }
 
-.navigation ul li a .title{
+.navigation ul li a .title {
   position: relative;
   display: block;
   padding: 0 10px;
@@ -284,7 +285,7 @@ body{
   white-space: nowrap;
 }
 
-.navigation ul li:hover a::before{
+.navigation ul li:hover a::before {
   content: '';
   position: absolute;
   top: -50px;
@@ -297,7 +298,7 @@ body{
   pointer-events: none;
 }
 
-.navigation ul li:hover a::after{
+.navigation ul li:hover a::after {
   content: '';
   position: absolute;
   bottom: -50px;
@@ -311,7 +312,7 @@ body{
 }
 
 /* main*/
-.main{
+.main {
   position: absolute;
   width: calc(100% - 300px);
   left: 300px;
@@ -320,12 +321,12 @@ body{
   transition: 0.5s;
 }
 
-.main.active{
+.main.active {
   width: calc(100% - 80px);
   left: 80px;
 }
 
-.topbar{
+.topbar {
   width: 100%;
   height: 60px;
   display: flex;
@@ -334,7 +335,7 @@ body{
   padding: 0 10px;
 }
 
-.toggle{
+.toggle {
   position: relative;
   width: 60px;
   height: 60px;
@@ -345,7 +346,7 @@ body{
   cursor: pointer;
 }
 
-.heading{
+.heading {
   position: relative;
   width: 400px;
   margin: 0 10px;
@@ -353,7 +354,7 @@ body{
   font-weight: 600;
 }
 
-.user{
+.user {
   position: relative;
   width: 40px;
   height: 50px;
@@ -362,7 +363,7 @@ body{
   cursor: pointer;
 }
 
-.user img{
+.user img {
   position: absolute;
   top: 0;
   left: 0;
@@ -371,7 +372,7 @@ body{
   object-fit: cover;
 }
 
-.details{
+.details {
   position: relative;
   width: 100%;
   padding: 20px;
@@ -380,40 +381,40 @@ body{
   grid-gap: 30px;
 }
 
-.details .courses{
+.details .courses {
   position: relative;
   display: grid;
   min-height: 500px;
   background-color: var(--white);
   padding: 20px;
-  box-shadow: 0 7px 25px rgba(0,0,0,0.08);
+  box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
   border-radius: 20px;
 }
 
-.cardheader h2{
+.cardheader h2 {
   font-weight: 600;
   color: var(--blue);
 }
 
-.details table{
+.details table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
   height: 100%;
 }
 
-.details table thead td{
+.details table thead td {
   font-weight: 600;
 
 }
 
-.details .courses table tr{
-  color :var(--black1);
-  border-bottom: 1px solid rgba(0,0,0,0.1);
+.details .courses table tr {
+  color: var(--black1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   /* height: 20px; */
 }
 
-.details .courses table tbody tr:hover{
+.details .courses table tbody tr:hover {
   background: var(--blue);
   color: var(--white);
 }
@@ -426,12 +427,13 @@ body{
   text-align: end;
 } */
 
-.details .courses table tr td{
+.details .courses table tr td {
   text-align: center;
 }
 
 .row-height {
-  height: 40px; /* Adjust the height as per your requirements */
+  height: 40px;
+  /* Adjust the height as per your requirements */
 }
 
 .additional-resources {
@@ -439,19 +441,19 @@ body{
 }
 
 .additional-resources .betterluck {
-font-size: 18px;
-margin: 10px;
-font-weight: 400;
+  font-size: 18px;
+  margin: 10px;
+  font-weight: 400;
 }
 
 .additional-resources .resourcestext {
-font-size: 15px;
-margin: 10px;
+  font-size: 15px;
+  margin: 10px;
 }
 
 .additional-resources ul {
-list-style-type: none;
-/* padding-left: 0; */
+  list-style-type: none;
+  /* padding-left: 0; */
 }
 
 .additional-resources li {

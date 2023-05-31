@@ -16,10 +16,9 @@
         <div class="navigation">
             <ul>
                 <li>
-                    <a href="#">
-                        <span class="icon"></span>
-                        <span class="title">Score X</span>
-                    </a>
+                    <div id="scorex-mobile">
+                        <img src="{{url_for('static', filename='img_fac_dashb/ScoreX_logo.png')}}" alt="Score Logo" id="score-logo-mobile">
+                    </div>
                 </li>
                 <li>
                     <a href="{{ url_for('faculty_dashboard') }}">
@@ -39,24 +38,6 @@
                         <span class="title">Messages</span>
                     </a>
                 </li>
-                <!-- <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="information-circle-outline"></ion-icon></span>
-                        <span class="title">Help</span>
-                    </a>
-                </li> -->
-                <!-- <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="settings-outline"></ion-icon></span>
-                        <span class="title">Settings</span>
-                    </a>
-                </li> -->
-                <li>
-                    <a href="#">
-                        <span class="icon"><ion-icon name="lock-closed-outline"></ion-icon></span>
-                        <span class="title">Password</span>
-                    </a>
-                </li>
                 <li>
                     <a href="{{ url_for('logout') }}">
                         <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
@@ -69,9 +50,6 @@
         <!--main-->
         <div class="main">
             <div class="topbar">
-                <div class="toggle">
-                    <ion-icon name="menu-outline"></ion-icon>
-                </div>
                 <div class="heading">
                     <!-- <div class="welcome">Welcome Professor {{ prof_name }}</div> -->
                     Welcome Professor {{ prof_name }}
@@ -180,20 +158,5 @@
 
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-
-    <script>
-        let toggle = document.querySelector('.toggle');
-        let navigation = document.querySelector('.navigation');
-        let main = document.querySelector('.main');
-
-        toggle.onclick = function(){
-            navigation.classList.toggle('active');
-            main.classList.toggle('active');
-        }
-
-        // function openPopup() {
-        //     window.open("login.html", "Popup", "width=600,height=600");
-        // }
-    </script>
 </body>
 </html>

@@ -15,6 +15,8 @@ import logging
 from functions import *
 
 
+
+
 FIREBASE_WEB_API_KEY = "AIzaSyC0aEymSwOknoaBuMIYPrzU_JRLXmJF0dU"
 rest_api_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
 

@@ -1,8 +1,15 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Student Dashboard</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js"
+    integrity="sha512-xbQU0+iHqhVt7VIXi6vBJKPh3IQBF5B84sSHdjKiSccyX/1ZI7Vnkt2/8y8uruj63/DVmCxfUNohPNruthTEQA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"
+    integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <!-- <link rel="stylesheet" href="styles_dashboard.css"> -->
   <link rel="stylesheet" href="{{ url_for('static', filename='styles_dashboard.css') }}">
   <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
@@ -10,7 +17,32 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
 </head>
+
 <body>
+  <script type="text/javascript">
+    var sending_this = ''
+    $(document).ready(function () {
+      var socket = io.connect("http://localhost:6969")
+      socket.on('connect', function () {
+        socket.send("User Connected!")
+      });
+
+      socket.on('message', function (data) {
+        console.log("In message")
+        sending_this = data
+        console.log("In socket.on " + sending_this)
+        $('#chat-box').innerHTML = '{{ chat_box_info }}'
+        $('#chat-box').append($('<span>').text(data)).append('</br>');
+      })
+
+      $('#send-button').on('click', function () {
+        var val_send = '{{ username }}' + ': ' + $('#chat-input').val()
+        socket.send(val_send);
+        $('#chat-input').val('');
+      })
+
+    })
+  </script>
   <div class="container">
     <div id="dashboard">
       <div id="header">
@@ -23,10 +55,15 @@
 
 
         <ul id="nav-menu">
-          <li><a href="{{ url_for('dashboard') }}"><img src="{{ url_for('static', filename='img_dashb/home.png') }}" alt="Home" class="nav-logo"> <span>Home</span></a></li>
-          <li><a href="{{ url_for('grades') }}"><img src="{{ url_for('static', filename='img_dashb/grades.png') }}" alt="Grades" class="nav-logo"> <span>Grades</span></a></li>
-          <li><a href="{{ url_for('analytics') }}"><img src="{{ url_for('static', filename='img_dashb/analyse.png') }}" alt="Analytics" class="nav-logo"> <span>Analytics</span></a></li>
-          <li><a href="{{ url_for('logout') }}" id="logout-button"><img src="{{url_for('static', filename='img_dashb/log-out.png')}}" alt="Logout" class="nav-logo"> <span>Logout</span></a></li>
+          <li><a href="{{ url_for('dashboard') }}"><img src="{{ url_for('static', filename='img_dashb/home.png') }}"
+                alt="Home" class="nav-logo"> <span>Home</span></a></li>
+          <li><a href="{{ url_for('grades') }}"><img src="{{ url_for('static', filename='img_dashb/grades.png') }}"
+                alt="Grades" class="nav-logo"> <span>Grades</span></a></li>
+          <li><a href="{{ url_for('analytics') }}"><img src="{{ url_for('static', filename='img_dashb/analyse.png') }}"
+                alt="Analytics" class="nav-logo"> <span>Analytics</span></a></li>
+          <li><a href="{{ url_for('logout') }}" id="logout-button"><img
+                src="{{url_for('static', filename='img_dashb/log-out.png')}}" alt="Logout" class="nav-logo">
+              <span>Logout</span></a></li>
         </ul>
       </div>
     </div>
@@ -39,8 +76,8 @@
         {{ graph_html|safe }}
 
       </div>
-        
-        <!-- {{ graph_html|safe }} -->
+
+      <!-- {{ graph_html|safe }} -->
 
       <!-- </div> -->
     </div>
@@ -51,7 +88,8 @@
 
         <!-- <img src="img_dashb/man.jpg" alt="Student Profile Picture" class="profile-image"> -->
 
-        <img src="{{ url_for('static', filename='img_dashb/man.jpg') }}" alt="Student Profile Picture" class="profile-image">
+        <img src="{{ url_for('static', filename='img_dashb/man.jpg') }}" alt="Student Profile Picture"
+          class="profile-image">
 
 
         <h2 class="profile-name">{{ username }}</h2>
@@ -66,16 +104,19 @@
     </div>
 
     <div id="chat-interface">
-    <span id="close-button" onclick="closeChat()">&times;</span>
-    <div id="chat-box"></div>
-    <div id="chat-input-container" class="input-container">
-      <input type="text" id="chat-input" placeholder="Type your message...">
-      <button id="send-button"><i class="bx bx-send"></i></button>
+      <span id="close-button" onclick="closeChat()">&times;</span>
+      <div id="chat-box">
+
+      </div>
+      <div id="chat-input-container" class="input-container">
+        <input type="text" id="chat-input" placeholder="Type your message...">
+        <button id="send-button"><i class="bx bx-send"></i></button>
+      </div>
     </div>
-  </div>
 
 
 
-<script src="{{ url_for('static', filename='script_analytics_redirect.js') }}"></script>
+    <script src="{{ url_for('static', filename='script_analytics_redirect.js') }}"></script>
 </body>
+
 </html>

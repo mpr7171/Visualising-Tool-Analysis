@@ -13,6 +13,7 @@ import pandas as pd
 from datetime import datetime
 import logging
 from functions import *
+from flask_socketio import SocketIO, send
 
 
 FIREBASE_WEB_API_KEY = "AIzaSyC0aEymSwOknoaBuMIYPrzU_JRLXmJF0dU"
@@ -24,14 +25,45 @@ app = Flask(__name__)
 app.secret_key = '666'
 auth = firebase_admin.auth
 
-app.secret_key='secret'
-cred = credentials.Certificate("se-test-7f7e1-firebase-adminsdk-auhlb-6adf0cbd2c.json")
+app.secret_key = 'secret'
+cred = credentials.Certificate(
+    "se-test-7f7e1-firebase-adminsdk-auhlb-6adf0cbd2c.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': "https://se-test-7f7e1-default-rtdb.firebaseio.com"
 })
 
-database=db.reference('Gpa2')
-resources=db.reference('Resources')
+message_log = ""
+
+database = db.reference('Gpa2')
+resources = db.reference('Resources')
+
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+
+@socketio.on('message')
+def handle_message(message):
+    print("Received message: " + message)
+    if message != "User Connected!":
+        indexOfColon = message.index(':')
+        sent_user = message[:indexOfColon]
+        finalInd = 0
+        try:
+            indexOfAt = message.index('@')
+            next_whitespace_index = message.index(' ', indexOfAt + 1)
+            rec_user = message[indexOfAt+1:next_whitespace_index]
+            finalInd = next_whitespace_index
+        except:
+            rec_user = "None"
+            finalInd = indexOfColon
+        first_letters = [word[0] for word in sent_user.split()]
+        message = ''.join(first_letters) + ': ' + str(message[finalInd+1:])
+        print("Sender: ", sent_user)
+        print("Receiver: ", rec_user)
+        with open(sent_user+'-'+rec_user+".txt", "w") as f:
+            f.write(message)
+            # session["chat_box_info"] = session["chat_box_info"] + message + "</br>"
+        send(message, broadcast=True)
+
 
 @app.after_request
 def add_cache_control(response):
@@ -41,7 +73,7 @@ def add_cache_control(response):
     return response
 
 
-def sign_in_with_email_and_password(email, password, return_secure_token = True):
+def sign_in_with_email_and_password(email, password, return_secure_token=True):
     payload = json.dumps({
         "email": email,
         "password": password,
@@ -50,13 +82,13 @@ def sign_in_with_email_and_password(email, password, return_secure_token = True)
 
     rest_api_url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
     r = requests.post(rest_api_url,
-                    params={"key": FIREBASE_WEB_API_KEY},
-                    data=payload)
+                      params={"key": FIREBASE_WEB_API_KEY},
+                      data=payload)
 
     return r.json()
 
 
-def previous_year(curr_year,branch):
+def previous_year(curr_year, branch):
 
     path_prev = f'grades/{int(curr_year)-1}/{branch}'
     ref_prev = db.reference(path_prev)
@@ -71,17 +103,17 @@ def previous_year(curr_year,branch):
 
     if data and data_prev == None:
         data = {}
-        no_data  = True
+        no_data = True
         disp_msg = "Please wait until your respective faculty upload the scores."
     elif data == None:
-        data={}
+        data = {}
         no_data = True
         disp_msg = "Please wait until your respective faculty upload the scores."
     elif data_prev == None:
-        data={}
+        data = {}
         no_data = True
         disp_msg = "Please wait until your respective faculty upload the scores."
-    
+
     courses = []
     prev_course_scores_dic = {}
     course_scores_dic = {}
@@ -90,8 +122,8 @@ def previous_year(curr_year,branch):
     graphs = []
 
     if (data and data_prev) == None or data == None or data_prev == None:
-        return (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc)
-    
+        return (no_data, disp_msg, courses, graphs, curr_user_scores, curr_user_perc)
+
     for k in data.keys():
         if k in data_prev.keys():
             courses.append(k)
@@ -108,7 +140,7 @@ def previous_year(curr_year,branch):
                 p_score = prev_course_scores[rollno]
                 prev_scores.append(p_score)
             prev_course_scores_dic[k] = prev_scores
-    
+
     num_pres = 0
     exam_type = 'endsem'
 
@@ -123,35 +155,38 @@ def previous_year(curr_year,branch):
 
         for stud in curr_course_scores:
             if exam_type in stud:
-                flag= True
+                flag = True
                 curr_marks.append(stud[exam_type])
                 if stud['student_id'] == session['student_id']:
                     curr_user_scores.append(stud[exam_type])
                     cscore = stud[exam_type]
-        
+
         for stud in prev_course_scores:
             if exam_type in stud:
                 prev_marks.append(stud[exam_type])
-                
 
         if flag:
-            num_pres+=1
-            curr_user_perc.append(calculate_percentage(your_score=cscore, scores = curr_marks))
+            num_pres += 1
+            curr_user_perc.append(calculate_percentage(
+                your_score=cscore, scores=curr_marks))
             mean = np.mean(curr_marks)
             mean_prev = np.mean(prev_marks)
             std_dev = np.std(curr_marks)
             std_dev_prev = np.std(prev_marks)
             x_values = np.linspace(mean - 3 * std_dev, mean + 3 * std_dev, 100)
-            y_values = (1 / (std_dev * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x_values - mean) / std_dev) ** 2)
-            x_values_prev = np.linspace(mean_prev - 3 * std_dev_prev, mean_prev + 3 * std_dev_prev, 100)
-            y_values_prev = (1 / (std_dev_prev * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x_values_prev - mean_prev) / std_dev_prev) ** 2)
+            y_values = (1 / (std_dev * np.sqrt(2 * np.pi))) * \
+                np.exp(-0.5 * ((x_values - mean) / std_dev) ** 2)
+            x_values_prev = np.linspace(
+                mean_prev - 3 * std_dev_prev, mean_prev + 3 * std_dev_prev, 100)
+            y_values_prev = (1 / (std_dev_prev * np.sqrt(2 * np.pi))) * \
+                np.exp(-0.5 * ((x_values_prev - mean_prev) / std_dev_prev) ** 2)
 
             percentiles = np.percentile(curr_marks, [50, 75, 90])
             percentiles_prev = np.percentile(prev_marks, [50, 75, 90])
 
-            fig = make_subplots(rows=4, cols=1, subplot_titles=(f"Distrbution of marks across for {course}", 
+            fig = make_subplots(rows=4, cols=1, subplot_titles=(f"Distrbution of marks across for {course}",
                                                                 f"Distrbution of marks across for {course} of Previous Year",
-                                                                "Histogram of marks (in branch)", 
+                                                                "Histogram of marks (in branch)",
                                                                 "Histogram of marks (in branch) of Previous Year"))
 
             # curr_scatter = go.Scatter(
@@ -248,7 +283,6 @@ def previous_year(curr_year,branch):
             #     width=1600
             # )
 
-
             # prev_scatter = go.Scatter(
             #     x=x_values_prev,
             #     y=y_values_prev,
@@ -311,12 +345,12 @@ def previous_year(curr_year,branch):
             ), row=2, col=1)
 
             fig.add_trace(go.Scatter(
-                    x=[percentiles[2], percentiles[2]],
-                    y=[0, np.max(y_values_prev)],
-                    mode='lines',
-                    name='90th Percentile',
-                    line=dict(dash='dash')
-                ))
+                x=[percentiles[2], percentiles[2]],
+                y=[0, np.max(y_values_prev)],
+                mode='lines',
+                name='90th Percentile',
+                line=dict(dash='dash')
+            ))
 
             # fig.update_layout(
             #     # title='Normal Distribution with Percentiles (Previous Year)',
@@ -325,7 +359,6 @@ def previous_year(curr_year,branch):
             #     height=2400,
             #     width=1600
             # )
-
 
             # histogram = go.Histogram(
             #     x=curr_marks,
@@ -382,13 +415,13 @@ def previous_year(curr_year,branch):
                 width=1600
             )
 
-            fig.update_xaxes(title_text='Marks',row=1,col=1)
+            fig.update_xaxes(title_text='Marks', row=1, col=1)
             fig.update_yaxes(title_text='Probability Density', row=1, col=1)
-            fig.update_xaxes(title_text='Marks',row=2,col=1)
+            fig.update_xaxes(title_text='Marks', row=2, col=1)
             fig.update_yaxes(title_text='Probability Density', row=2, col=1)
-            fig.update_xaxes(title_text='Marks',row=3,col=1)
+            fig.update_xaxes(title_text='Marks', row=3, col=1)
             fig.update_yaxes(title_text='Frequency', row=3, col=1)
-            fig.update_xaxes(title_text='Marks',row=4,col=1)
+            fig.update_xaxes(title_text='Marks', row=4, col=1)
             fig.update_yaxes(title_text='Frequency', row=4, col=1)
 
             # fig.update_xaxes(title_text="Marks")
@@ -403,27 +436,26 @@ def previous_year(curr_year,branch):
             # fig.add_trace(prev_scatter,row=2,col=1)
             # fig.add_trace(histogram,row=3,col=1)
             # fig.add_trace(histogram_prev,row=4,col=1)
-            
 
             graph_html = fig.to_html(full_html=False, include_plotlyjs=True)
             graphs.append(graph_html)
-
 
         if num_pres == 0:
             no_data = True
 
             disp_msg = "Please wait until your respective faculty uploads the scores."
 
-        return (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc)
+        return (no_data, disp_msg, courses, graphs, curr_user_scores, curr_user_perc)
 
 
 def get_analytics_info(year, branch, exam_type):
-    if exam_type=='previousyear':
-        (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc) = previous_year(year,branch)
-        return (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc)
+    if exam_type == 'previousyear':
+        (no_data, disp_msg, courses, graphs, curr_user_scores,
+         curr_user_perc) = previous_year(year, branch)
+        return (no_data, disp_msg, courses, graphs, curr_user_scores, curr_user_perc)
     else:
         path = f'grades/{year}/{branch}'
-        
+
         ref1 = db.reference(path)
 
         no_data = False
@@ -433,10 +465,8 @@ def get_analytics_info(year, branch, exam_type):
 
         if data == None:
             data = {}
-            no_data  = True
+            no_data = True
             disp_msg = "Please wait until your respective faculty upload the scores."
-        
-            
 
         courses = []
         course_scores_dic = {}
@@ -446,13 +476,13 @@ def get_analytics_info(year, branch, exam_type):
         graphs = []
 
         if data == None:
-            return (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc)
+            return (no_data, disp_msg, courses, graphs, curr_user_scores, curr_user_perc)
 
         for k in data.keys():
             courses.append(k)
             curr_scores = []
             course_scores = data[k]
-            for rollno in course_scores:    
+            for rollno in course_scores:
 
                 c_score = course_scores[rollno]
                 curr_scores.append(c_score)
@@ -460,13 +490,13 @@ def get_analytics_info(year, branch, exam_type):
             course_scores_dic[k] = curr_scores
 
         num_pres = 0
-        
+
         for course in courses:
             curr_course_scores = course_scores_dic[course]
 
             curr_marks = []
 
-            cscore = 0  
+            cscore = 0
 
             flag = False
 
@@ -476,26 +506,27 @@ def get_analytics_info(year, branch, exam_type):
                     flag = True
                     curr_marks.append(stud[exam_type])
 
-
                     if stud['student_id'] == session["student_id"]:
                         curr_user_scores.append(stud[exam_type])
                         cscore = stud[exam_type]
-                
-                    
+
             if flag:
                 num_pres += 1
-                curr_user_perc.append(calculate_percentage(your_score=cscore,scores=curr_marks))
+                curr_user_perc.append(calculate_percentage(
+                    your_score=cscore, scores=curr_marks))
 
                 mean = np.mean(curr_marks)
                 std_dev = np.std(curr_marks)
-                x_values = np.linspace(mean - 3 * std_dev, mean + 3 * std_dev, 100)
-                y_values = (1 / (std_dev * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x_values - mean) / std_dev) ** 2)
+                x_values = np.linspace(
+                    mean - 3 * std_dev, mean + 3 * std_dev, 100)
+                y_values = (1 / (std_dev * np.sqrt(2 * np.pi))) * \
+                    np.exp(-0.5 * ((x_values - mean) / std_dev) ** 2)
 
                 percentiles = np.percentile(curr_marks, [50, 75, 90])
 
                 fig = go.Figure()
                 fig = make_subplots(rows=2, cols=1, row_heights=[0.5, 0.4],
-                        subplot_titles=(f"Distrbution of marks across for {course}", "Histogram of marks (in branch)"))
+                                    subplot_titles=(f"Distrbution of marks across for {course}", "Histogram of marks (in branch)"))
 
                 fig.add_trace(go.Scatter(
                     x=x_values,
@@ -519,7 +550,6 @@ def get_analytics_info(year, branch, exam_type):
                     name='Max score obtained',
                     line=dict(dash='dash')
                 ))
-
 
                 fig.add_trace(go.Scatter(
                     x=[percentiles[2], percentiles[2]],
@@ -554,28 +584,27 @@ def get_analytics_info(year, branch, exam_type):
                 fig.add_trace(histogram, row=2, col=1)
 
                 fig.update_layout(
-                # title='Histogram of marks',
-                # xaxis_title='Marks',
-                # yaxis_title='Frequency',
-                height=800, width=1200
+                    # title='Histogram of marks',
+                    # xaxis_title='Marks',
+                    # yaxis_title='Frequency',
+                    height=800, width=1200
                 )
-                fig.update_xaxes(title_text='Marks',row=1,col=1)
-                fig.update_yaxes(title_text='Probability Density', row=1, col=1)
-                fig.update_xaxes(title_text='Marks',row=2,col=1)
+                fig.update_xaxes(title_text='Marks', row=1, col=1)
+                fig.update_yaxes(
+                    title_text='Probability Density', row=1, col=1)
+                fig.update_xaxes(title_text='Marks', row=2, col=1)
                 fig.update_yaxes(title_text='Frequency', row=2, col=1)
 
-                graph_html = fig.to_html(full_html=False, include_plotlyjs=True)
+                graph_html = fig.to_html(
+                    full_html=False, include_plotlyjs=True)
                 graphs.append(graph_html)
 
-            
-        
         if num_pres == 0:
             no_data = True
 
             disp_msg = "Please wait untill your respective faculty uploads the scores."
 
-        return (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc)
-
+        return (no_data, disp_msg, courses, graphs, curr_user_scores, curr_user_perc)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -585,7 +614,7 @@ def login():
 
         email = request.form.get('email')
         password = request.form.get('password')
-        
+
         try:
             token = sign_in_with_email_and_password(email, password)
             session['user_id'] = token['localId']
@@ -597,14 +626,13 @@ def login():
                     if token['code'] == 400:
                         if token["message"] == "EMAIL_NOT_FOUND":
                             return redirect('/')
-                            
+
                         elif token["message"] == "INVALID_PASSWORD":
                             return redirect('/')
-                        
+
                         else:
                             return redirect('/')
 
-                        
             if "registered" in token:
                 email_splits = email.split("@")
 
@@ -614,7 +642,7 @@ def login():
 
                 # print(is_faculty)
 
-                if is_faculty == False:    
+                if is_faculty == False:
 
                     if token["registered"] == True:
                         email = token['email']
@@ -622,34 +650,32 @@ def login():
 
                         # print(name)
 
-                        rollNo=extract_roll_number(email)
+                        rollNo = extract_roll_number(email)
 
-                        year,branch= extraction(email)
-                        branch_dict = {'uari' : "AI", 
-                        'ucse' : "CSE", 
-                        'umee' : "ME", 
-                        'uece' : "ECE", 
-                        'ucam' : "CM",
-                        'ueee' : "EEE"}
-                
+                        year, branch = extraction(email)
+                        branch_dict = {'uari': "AI",
+                                       'ucse': "CSE",
+                                       'umee': "ME",
+                                       'uece': "ECE",
+                                       'ucam': "CM",
+                                       'ueee': "EEE"}
+
                         branch = branch_dict[branch]
-
 
                         session['student_id'] = rollNo.upper()
                         session['branch'] = branch
                         session['username'] = name
                         session['year'] = year
+
                         # session['email'] = email
 
                         session['logged_in'] = True
 
                         return redirect(url_for('dashboard'))
-                    
+
                     else:
 
                         render_template('login.html')
-
-            
 
                 else:
                     if token["registered"] == True:
@@ -669,23 +695,19 @@ def login():
                         # return render_template('index_faculty_db.html', prof_name = name)
 
                         return redirect(url_for('faculty_dashboard'))
-                    
+
                     else:
                         # return redirect(url_for('dashboard'))
                         render_template('login.html')
 
-
-
             else:
                 render_template('login.html')
-                
 
         except:
             return render_template('login.html')
-    
+
     else:
         return render_template('login.html')
-    
 
 
 @app.route('/logout')
@@ -696,7 +718,7 @@ def logout():
 
 @app.route('/dashboard')
 def dashboard():
-
+    session['chat_box_info'] = message_log
     if not session.get('logged_in'):
         return redirect(url_for('login'))
 
@@ -721,7 +743,6 @@ def dashboard():
     if gpa_dic == None:
         no_flag = True
 
-
     if no_flag == False:
         gpa_arr_temp = list(gpa_dic.values())
         for i in range(len(gpa_arr_temp)):
@@ -740,10 +761,10 @@ def dashboard():
             sems_arr.append('SEM'+str(i+1))
             gpa_arr.append(0)
 
-    
     fig = go.Figure()
 
-    fig.add_trace(go.Scatter(x=sems_arr, y=gpa_arr, mode='markers+lines', name='GPA'))
+    fig.add_trace(go.Scatter(x=sems_arr, y=gpa_arr,
+                  mode='markers+lines', name='GPA'))
     fig.update_xaxes(title_text="SEM")
     fig.update_yaxes(title_text="GPA obtained")
     fig.update_layout(
@@ -752,28 +773,22 @@ def dashboard():
 
     graph_html = fig.to_html(full_html=False, include_plotlyjs=True)
 
-
-    return render_template('index.html', student_id = student_id, branch = branch, username = username, curr_sem = curr_sem ,graph_html=graph_html)
-
-
+    return render_template('index.html', student_id=student_id, branch=branch, username=username, curr_sem=curr_sem, graph_html=graph_html)
 
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
 
-    if request.method=='GET':
+    if request.method == 'GET':
 
         return render_template('signup.html')
-    
 
-    if request.method=='POST':
+    if request.method == 'POST':
 
         name = request.form.get('signup_name')
         email = request.form.get('signup_email')
         password = request.form.get('signup_password')
         confirm_password = request.form.get('signup_confirm_password')
-
-
 
         if password != confirm_password:
             error_message = "Passwords do not match. Please try again."
@@ -783,41 +798,39 @@ def signup():
 
             if ('mahindrauniversity.edu.in' not in email):
                 raise Exception("Please use only Mahindra University email")
-            
 
             email_splits = email.split("@")
 
             if "." in email_splits[0]:
-                raise Exception("Please use proper Mahindra University's student email")
+                raise Exception(
+                    "Please use proper Mahindra University's student email")
 
-            usr_created = firebase_admin.auth.create_user(email = email, password = password, display_name = name)
+            usr_created = firebase_admin.auth.create_user(
+                email=email, password=password, display_name=name)
 
+            year, branch = extraction(email)
 
-            year,branch= extraction(email)
+            rollNo = extract_roll_number(email)
 
-            rollNo=extract_roll_number(email)
+            branch_dict = {'uari': "AI",
+                           'ucse': "CSE",
+                           'umee': "ME",
+                           'uece': "ECE",
+                           'ucam': "CM",
+                           'ueee': "EEE"}
 
-            branch_dict = {'uari' : "AI", 
-                       'ucse' : "CSE", 
-                       'umee' : "ME", 
-                       'uece' : "ECE", 
-                       'ucam' : "CM",
-                       'ueee' : "EEE"}
-            
             branch = branch_dict[branch]
-
 
             path = 'students/batch'
 
             stud_path = f'{path}/{year}/{branch}'
-            
+
             ref = db.reference(stud_path)
 
             ref.child(rollNo.upper()).set({
-                    'name' : name,
-                    'email': email
-                })
-            
+                'name': name,
+                'email': email
+            })
 
             session['student_id'] = rollNo.upper()
             session['branch'] = branch
@@ -836,6 +849,7 @@ def signup():
             flash(error)
             return render_template('signup.html', error=error)
 
+
 @app.route('/grades')
 def grades():
     if 'user_id' in session:
@@ -850,11 +864,11 @@ def grades():
         if yearBatch[1] == 'uari':
             location = f"{year}/AI/{rollNo}"
             fetch = database.child(location).get()
-        
+
         if yearBatch[1] == 'ucse':
             location = f"{year}/CSE/{rollNo}"
             fetch = database.child(location).get()
-        
+
         if yearBatch[1] == 'ueee':
             location = f"{year}/EEE/{rollNo}"
             fetch = database.child(location).get()
@@ -865,7 +879,8 @@ def grades():
 
         courses = []  # List to store the fetched courses
         additional_resources = {}  # Dictionary to store additional resources
-        previous_year_papers_link = resources.child('previousYearPapers').get()  # Fetch the previous year papers link
+        previous_year_papers_link = resources.child(
+            'previousYearPapers').get()  # Fetch the previous year papers link
 
         # Process the fetched courses and their grades
         for course_key, course_data in fetch.items():
@@ -896,14 +911,13 @@ def grades():
 
 #     (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc) = get_analytics_info(year,branch, exam_type='minor1')
 
-#     return render_template('index_analytics.html', 
+#     return render_template('index_analytics.html',
 #                         courses=courses,
 #                         graphs=graphs,
 #                         curr_user_scores = curr_user_scores ,
-#                         curr_user_perc = curr_user_perc, 
-#                         zip=zip, 
+#                         curr_user_perc = curr_user_perc,
+#                         zip=zip,
 #                         no_data = no_data, disp_msg = disp_msg)
-
 
 
 @app.route('/analytics_redirect')
@@ -917,11 +931,8 @@ def analytics():
     year_int = int("20"+year)
     curr_sem = calculate_current_semester(year_int)
 
-    return render_template('analytics_redirect.html', 
-                        student_id = student_id, branch = branch, username = username, curr_sem = curr_sem )
-
-
-
+    return render_template('analytics_redirect.html',
+                           student_id=student_id, branch=branch, username=username, curr_sem=curr_sem)
 
 
 @app.route('/minor1')
@@ -930,18 +941,18 @@ def minor1():
     branch = session['branch']
 
     path = f'grades/{year}/{branch}'
-    
 
-    (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc) = get_analytics_info(year,branch, exam_type='minor1')
+    (no_data, disp_msg, courses, graphs, curr_user_scores,
+     curr_user_perc) = get_analytics_info(year, branch, exam_type='minor1')
 
+    return render_template('index_analytics.html',
+                           courses=courses,
+                           graphs=graphs,
+                           curr_user_scores=curr_user_scores,
+                           curr_user_perc=curr_user_perc,
+                           zip=zip,
+                           no_data=no_data, disp_msg=disp_msg)
 
-    return render_template('index_analytics.html', 
-                        courses=courses,
-                        graphs=graphs,
-                        curr_user_scores = curr_user_scores ,
-                        curr_user_perc = curr_user_perc, 
-                        zip=zip, 
-                        no_data = no_data, disp_msg = disp_msg)
 
 @app.route('/minor2')
 def minor2():
@@ -949,18 +960,18 @@ def minor2():
     branch = session['branch']
 
     path = f'grades/{year}/{branch}'
-    
 
-    (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc) = get_analytics_info(year,branch, exam_type='minor2')
+    (no_data, disp_msg, courses, graphs, curr_user_scores,
+     curr_user_perc) = get_analytics_info(year, branch, exam_type='minor2')
 
+    return render_template('index_analytics_m2.html',
+                           courses=courses,
+                           graphs=graphs,
+                           curr_user_scores=curr_user_scores,
+                           curr_user_perc=curr_user_perc,
+                           zip=zip,
+                           no_data=no_data, disp_msg=disp_msg)
 
-    return render_template('index_analytics_m2.html', 
-                        courses=courses,
-                        graphs=graphs,
-                        curr_user_scores = curr_user_scores ,
-                        curr_user_perc = curr_user_perc, 
-                        zip=zip, 
-                        no_data = no_data, disp_msg = disp_msg)
 
 @app.route('/endsem')
 def endsem():
@@ -968,18 +979,18 @@ def endsem():
     branch = session['branch']
 
     path = f'grades/{year}/{branch}'
-    
 
-    (no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc) = get_analytics_info(year,branch, exam_type='endsem')
+    (no_data, disp_msg, courses, graphs, curr_user_scores,
+     curr_user_perc) = get_analytics_info(year, branch, exam_type='endsem')
 
+    return render_template('index_analytics_es.html',
+                           courses=courses,
+                           graphs=graphs,
+                           curr_user_scores=curr_user_scores,
+                           curr_user_perc=curr_user_perc,
+                           zip=zip,
+                           no_data=no_data, disp_msg=disp_msg)
 
-    return render_template('index_analytics_es.html', 
-                        courses=courses,
-                        graphs=graphs,
-                        curr_user_scores = curr_user_scores ,
-                        curr_user_perc = curr_user_perc, 
-                        zip=zip, 
-                        no_data = no_data, disp_msg = disp_msg)
 
 @app.route('/prevyear')
 def prevyear():
@@ -987,17 +998,18 @@ def prevyear():
     branch = session['branch']
 
     # path = f'grades/{year}/{branch}'
-    no_data,disp_msg,courses,graphs,curr_user_scores,curr_user_perc = get_analytics_info(year,branch, exam_type='previousyear')
-    return render_template('index_analytics_pyear.html', 
-                        courses=courses,
-                        graphs=graphs,
-                        curr_user_scores = curr_user_scores ,
-                        curr_user_perc = curr_user_perc, 
-                        zip=zip, 
-                        no_data = no_data,
-                        disp_msg = disp_msg)
+    no_data, disp_msg, courses, graphs, curr_user_scores, curr_user_perc = get_analytics_info(
+        year, branch, exam_type='previousyear')
+    return render_template('index_analytics_pyear.html',
+                           courses=courses,
+                           graphs=graphs,
+                           curr_user_scores=curr_user_scores,
+                           curr_user_perc=curr_user_perc,
+                           zip=zip,
+                           no_data=no_data,
+                           disp_msg=disp_msg)
     # implement the function for grabbing and comapring previous year grades.
-    
+
 
 #######################  FACULTY  ##########################
 
@@ -1008,45 +1020,39 @@ def index():
 
 
 @app.route('/faculty_analytics')
-def faculty_analytics(batch, subject_code, exam_type,branch):
+def faculty_analytics(batch, subject_code, exam_type, branch):
     database_url = 'https://se-test-7f7e1-default-rtdb.firebaseio.com/'
-    path = 'grades/' + batch + '/' +branch + '/' + subject_code
+    path = 'grades/' + batch + '/' + branch + '/' + subject_code
     data = db.reference(path).get()
     studentID = list(data.keys())
-    
-    
-    
-    
-    
-    
+
     # MINOR 1 ----------------------------------------------------------------------
     if exam_type == "minor1":
         minor1_grades = []
         for i in range(len(studentID)):
             marks = db.reference(path+'/'+studentID[i]).get()
             minor1_grades.append(marks['minor1'])
-        
+
         minor1_df = pd.DataFrame({'Minor1': np.array(minor1_grades)})
         fig = go.Figure()
         fig.add_trace(go.Box(y=minor1_df['Minor1'], name="Minor 1"))
-        fig.update_layout(title= "The grade analysis of the course " + subject_code)
+        fig.update_layout(
+            title="The grade analysis of the course " + subject_code)
         fig.update_layout(showlegend=True)
-        
-        #Normal Curve 
+
+        # Normal Curve
         minor1_grades = np.array(minor1_grades)
         avg_m1 = np.mean(minor1_grades)
         std = np.std(minor1_grades)
-        
-        
 
         # # Generate x-axis values
         x = np.linspace(minor1_grades.min(), minor1_grades.max(), 100)
-        y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
-
-       
+        y = (1 / (std * np.sqrt(2 * np.pi))) * \
+            np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
 
         # Plot the bell curve
-        fig2 = go.Figure(data=go.Scatter(x=x, y=y, mode='lines', name='Bell Curve'))
+        fig2 = go.Figure(data=go.Scatter(
+            x=x, y=y, mode='lines', name='Bell Curve'))
         fig2.update_layout(
             title="The normal distribution analysis of the " + subject_code,
             xaxis_title='Marks',
@@ -1062,13 +1068,14 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         # Calculate the percentiles and the number of values above each percentile
         for percentile in percentiles:
             percentile_value = np.percentile(sample, percentile)
-            count_above_percentile = sum(value > percentile_value for value in sample)
+            count_above_percentile = sum(
+                value > percentile_value for value in sample)
             counts_above_percentiles.append(count_above_percentile)
-            
-            
+
             # Calculate the percentiles
-        colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
-        percentiles = [ 75, 90, 95]
+        # Specify colors for each percentile line
+        colors = ['red', 'blue', 'green']
+        percentiles = [75, 90, 95]
         percentile_values = np.percentile(minor1_grades, percentiles)
 
         for percentile, value, color in zip(percentiles, percentile_values, colors):
@@ -1095,10 +1102,7 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
             )
 
         fig2.update_layout(showlegend=True)
-        
-        
-        
-        
+
         hist, bins = np.histogram(minor1_grades)
 
         # Find the bin with the highest count
@@ -1112,7 +1116,6 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         fig3 = go.Figure(data=[go.Histogram(x=minor1_grades)])
 
         # Find the index of the bin with the highest count
-    
 
         # Set the color for all bins
         colors = ['lightblue'] * len(hist)
@@ -1124,12 +1127,10 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         fig3.update_traces(marker=dict(color=colors))
 
         fig3.update_layout(title="Histogram of Minor1 Grades",
-                            xaxis_title="Marks",
-        yaxis_title="Frequency")
-        
+                           xaxis_title="Marks",
+                           yaxis_title="Frequency")
 
         # fig3 = go.Figure(data=[go.Histogram(x=minor1_grades)])
-
 
         # fig3.update_layout(
         #     title="Histogram for the Minor 1 Grades",
@@ -1137,36 +1138,29 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         #     yaxis_title="Frequency"
         # )
 
-        
         graph_json = fig.to_json()
         graph2_json = fig2.to_json()
         graph3_json = fig3.to_json()
-        
+
         highest = minor1_grades.max()
         lowest = minor1_grades.min()
         Q1 = np.percentile(minor1_grades, 25)
         Q3 = np.percentile(minor1_grades, 75)
         sorted_array = np.sort(minor1_grades)[::-1]
-        
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m1, highest = highest, lowest = lowest, 
-                           course = subject_code, type = 'Minor 1', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
-                           asc = sorted_array, counts = counts_above_percentiles)
-    
-    
-    
-    
-    
-    
-    # MINOR 2 -------------------------------------------------------------------------- 
-    
-    
+
+        return render_template('graph.html', graph_json=graph_json, graph2_json=graph2_json, graph3_json=graph3_json, avg=avg_m1, highest=highest, lowest=lowest,
+                               course=subject_code, type='Minor 1', q1=Q1, q2=Q3, start=range_start, end=range_end, high_freq_count=highest_freq_count+1,
+                               asc=sorted_array, counts=counts_above_percentiles)
+
+    # MINOR 2 --------------------------------------------------------------------------
+
     elif exam_type == "minor2":
         minor1_grades = []
         minor2_grades = []
         for i in range(len(studentID)):
-            
+
             marks = db.reference(path+'/'+studentID[i]).get()
-            if(marks['minor1'] == None):
+            if (marks['minor1'] == None):
                 return "Minor 1 grades have not been uploaded. Please upload Minor1 grades"
             minor1_grades.append(marks['minor1'])
             minor2_grades.append(marks['minor2'])
@@ -1180,21 +1174,20 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         fig.add_trace(go.Box(y=minor1_df['Minor1'], name="Minor 1"))
         fig.add_trace(go.Box(y=minor2_df['Minor2'], name="Minor 2"))
         fig.update_layout(showlegend=True)
-        
-        
-        
+
         std = np.std(minor2_grades)
         x = np.linspace(minor2_grades.min(), minor2_grades.max(), 100)
-        y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
-        fig2 = go.Figure(data=go.Scatter(x=x, y=y, mode='lines', name='Bell Curve'))
+        y = (1 / (std * np.sqrt(2 * np.pi))) * \
+            np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
+        fig2 = go.Figure(data=go.Scatter(
+            x=x, y=y, mode='lines', name='Bell Curve'))
         fig2.update_layout(
             title="The normal distribution analysis of the course " + subject_code,
             xaxis_title='Marks',
             yaxis_title='Probability Density',
             showlegend=True
         )
-        
-        
+
         # Calculate the percentiles
         sample = np.random.normal(avg_m2, std, len(minor2_grades))
 
@@ -1205,13 +1198,14 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         # Calculate the percentiles and the number of values above each percentile
         for percentile in percentiles:
             percentile_value = np.percentile(sample, percentile)
-            count_above_percentile = sum(value > percentile_value for value in sample)
+            count_above_percentile = sum(
+                value > percentile_value for value in sample)
             counts_above_percentiles.append(count_above_percentile)
-            
-            
+
             # Calculate the percentiles
-        colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
-        percentiles = [ 75, 90, 95]
+        # Specify colors for each percentile line
+        colors = ['red', 'blue', 'green']
+        percentiles = [75, 90, 95]
         percentile_values = np.percentile(minor2_grades, percentiles)
 
         for percentile, value, color in zip(percentiles, percentile_values, colors):
@@ -1237,11 +1231,8 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
                 )
             )
 
-        
         fig2.update_layout(showlegend=True)
-    
-    
-        
+
         hist, bins = np.histogram(minor2_grades)
 
         # Find the bin with the highest count
@@ -1255,7 +1246,6 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         fig3 = go.Figure(data=[go.Histogram(x=minor2_grades)])
 
         # Find the index of the bin with the highest count
-    
 
         # Set the color for all bins
         colors = ['lightblue'] * len(hist)
@@ -1267,15 +1257,10 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         fig3.update_traces(marker=dict(color=colors))
 
         fig3.update_layout(title="Histogram of Minor2 Grades",
-                            xaxis_title="Marks",
-        yaxis_title="Frequency")
-        
+                           xaxis_title="Marks",
+                           yaxis_title="Frequency")
 
-        
-        
-        
         # fig3 = go.Figure(data=[go.Histogram(x=minor1_grades)])
-
 
         # fig3.update_layout(
         #     title="Histogram for the Minor 1 Grades",
@@ -1283,16 +1268,10 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         #     yaxis_title="Frequency"
         # )
 
-        
         graph_json = fig.to_json()
         graph2_json = fig2.to_json()
         graph3_json = fig3.to_json()
-        
-        
-        
-        
-        
-        
+
         #
 
         highest = minor2_grades.max()
@@ -1300,41 +1279,28 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         Q1 = np.percentile(minor2_grades, 25)
         Q3 = np.percentile(minor2_grades, 75)
         sorted_array = np.sort(minor2_grades)[::-1]
-        
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m2, highest = highest, lowest = lowest, 
-                           course = subject_code, type = 'Minor 2', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
-                           asc = sorted_array, counts = counts_above_percentiles)
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+        return render_template('graph.html', graph_json=graph_json, graph2_json=graph2_json, graph3_json=graph3_json, avg=avg_m2, highest=highest, lowest=lowest,
+                               course=subject_code, type='Minor 2', q1=Q1, q2=Q3, start=range_start, end=range_end, high_freq_count=highest_freq_count+1,
+                               asc=sorted_array, counts=counts_above_percentiles)
+
     # END SEM --------------------------------------------------------------
-    
-    
-    
-    
-    
+
     elif exam_type == "endsem":
         minor1_grades = []
         minor2_grades = []
         end_sem_grades = []
         for i in range(len(studentID)):
             marks = db.reference(path+'/'+studentID[i]).get()
-            if(marks['minor1'] == None):
+            if (marks['minor1'] == None):
                 return "Minor 1 grades have not been uploaded. Please upload Minor1 grades"
             elif (marks['minor2'] == None):
                 return "Minor 2 grades have not been uploaded. Please upload Minor2 grades"
-            
+
             minor1_grades.append(marks['minor1'])
             minor2_grades.append(marks['minor2'])
             end_sem_grades.append(marks['endsem'])
-            
+
         minor1_grades = np.array(minor1_grades)
         minor2_grades = np.array(minor2_grades)
         end_sem_grades = np.array(end_sem_grades)
@@ -1349,34 +1315,38 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         fig.add_trace(go.Box(y=minor2_df['Minor2'], name="Minor 2"))
         fig.add_trace(go.Box(y=endsem_df['End Sem'], name="End Semester"))
         fig.update_layout(showlegend=True)
-        
+
         std = np.std(end_sem_grades)
         x = np.linspace(end_sem_grades.min(), end_sem_grades.max(), 100)
-        y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
-        fig2 = go.Figure(data=go.Scatter(x=x, y=y, mode='lines', name='Normal dist'))
+        y = (1 / (std * np.sqrt(2 * np.pi))) * \
+            np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
+        fig2 = go.Figure(data=go.Scatter(
+            x=x, y=y, mode='lines', name='Normal dist'))
         fig2.update_layout(
             title="The normal distribution  analysis of the " + subject_code,
             xaxis_title='Marks',
             yaxis_title='Probability Density',
             showlegend=True
         )
-        
+
         # Calculate the percentiles
         sample = np.random.normal(avg_endsem, std, len(end_sem_grades))
 
-        percentiles = [ 75, 90, 95]
+        percentiles = [75, 90, 95]
 
         counts_above_percentiles = []
 
         # Calculate the percentiles and the number of values above each percentile
         for percentile in percentiles:
             percentile_value = np.percentile(sample, percentile)
-            count_above_percentile = sum(value > percentile_value for value in sample)
+            count_above_percentile = sum(
+                value > percentile_value for value in sample)
             counts_above_percentiles.append(count_above_percentile)
-            
+
             # Calculate the percentiles
-        colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
-    
+        # Specify colors for each percentile line
+        colors = ['red', 'blue', 'green']
+
         percentile_values = np.percentile(end_sem_grades, percentiles)
 
         for percentile, value, color in zip(percentiles, percentile_values, colors):
@@ -1402,10 +1372,8 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
                 )
             )
 
-        
-        fig2.update_layout(showlegend=True) 
-        
-        
+        fig2.update_layout(showlegend=True)
+
         hist, bins = np.histogram(end_sem_grades)
 
         # Find the bin with the highest count
@@ -1419,7 +1387,6 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         fig3 = go.Figure(data=[go.Histogram(x=end_sem_grades)])
 
         # Find the index of the bin with the highest count
-    
 
         # Set the color for all bins
         colors = ['lightblue'] * len(hist)
@@ -1431,15 +1398,10 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         fig3.update_traces(marker=dict(color=colors))
 
         fig3.update_layout(title="Histogram of End semester Grades",
-                            xaxis_title="Marks",
-        yaxis_title="Frequency")
-        
+                           xaxis_title="Marks",
+                           yaxis_title="Frequency")
 
-        
-        
-        
         # fig3 = go.Figure(data=[go.Histogram(x=minor1_grades)])
-
 
         # fig3.update_layout(
         #     title="Histogram for the Minor 1 Grades",
@@ -1447,16 +1409,10 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         #     yaxis_title="Frequency"
         # )
 
-        
         graph_json = fig.to_json()
         graph2_json = fig2.to_json()
         graph3_json = fig3.to_json()
-        
-        
-        
-        
-        
-        
+
         #
 
         highest = end_sem_grades.max()
@@ -1464,40 +1420,28 @@ def faculty_analytics(batch, subject_code, exam_type,branch):
         Q1 = np.percentile(end_sem_grades, 25)
         Q3 = np.percentile(end_sem_grades, 75)
         sorted_array = np.sort(end_sem_grades)[::-1]
-        
-        return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_endsem, highest = highest, lowest = lowest, 
-                           course = subject_code, type = 'End Sem', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
-                           asc = sorted_array, counts = counts_above_percentiles)
+
+        return render_template('graph.html', graph_json=graph_json, graph2_json=graph2_json, graph3_json=graph3_json, avg=avg_endsem, highest=highest, lowest=lowest,
+                               course=subject_code, type='End Sem', q1=Q1, q2=Q3, start=range_start, end=range_end, high_freq_count=highest_freq_count+1,
+                               asc=sorted_array, counts=counts_above_percentiles)
 
     return "Analytics cannot be viewed"
-            
-            
-            
-        
-    
-    
-    
+
 
 def upload_to_database(batch, exam_type, file):
-    
+
     csv_file = request.files['file']
 
     fn_contents = csv_file.filename.split("_")
-    
+
     database_url = 'https://se-test-7f7e1-default-rtdb.firebaseio.com/'
     subject_code = fn_contents[0]
     branch = subject_code[:2]
-    
-    
-    if len(batch)>2:
+
+    if len(batch) > 2:
         batch = batch[2:]
 
-    
-    
-        
-    path = 'grades/'+ batch + '/' + branch + '/' + subject_code 
-    
-
+    path = 'grades/' + batch + '/' + branch + '/' + subject_code
 
     if csv_file and csv_file.filename.endswith('.csv'):
 
@@ -1510,60 +1454,46 @@ def upload_to_database(batch, exam_type, file):
                     'student_id': student_id,
                     'minor1': int(df_csv['Marks'][i])
                 }
-                response = requests.put(f'{database_url}/{path}/{student_id}.json', json=data)
+                response = requests.put(
+                    f'{database_url}/{path}/{student_id}.json', json=data)
                 if response.status_code == 200:
-                    continue 
+                    continue
                 else:
                     print("Error: Can't add details")
 
-
-       
         elif exam_type == "minor2":
             for i in range(len(df_csv)):
                 student_id = df_csv['Student_ID'][i]
-                
+
                 # response = requests.put(f'{database_url}/{path}/{subject_code}/{student_id}.json', json=data)
-                student_ref = db.reference(str(path +'/' + student_id))
+                student_ref = db.reference(str(path + '/' + student_id))
                 student_details = student_ref.get()
-                
-                
-                if(student_details == None):
+
+                if (student_details == None):
                     return 'Please upload Minor1 Results'
                 else:
                     student_details['minor2'] = int(df_csv['Marks'][i])
                     student_ref.update(student_details)
-                
-            
-           
 
         elif exam_type == "endsem":
             for i in range(len(df_csv)):
                 student_id = df_csv['Student_ID'][i]
-                
+
                 # response = requests.put(f'{database_url}/{path}/{subject_code}/{student_id}.json', json=data)
                 student_ref = db.reference(str(path + '/' + student_id))
                 student_details = student_ref.get()
-                if(student_details == None):
+                if (student_details == None):
                     return 'Please upload Minor1 and Minor2 Results'
                 student_details['endsem'] = int(df_csv['Marks'][i])
                 student_ref.update(student_details)
-                
 
-        
         # firebase_admin.delete_app(firebase_admin.get_app())
         return faculty_analytics(batch, subject_code, exam_type, branch)
         # return ' Added successfully'
-    
 
     else:
         # firebase_admin.delete_app(firebase_admin.get_app())
         return 'Invalid file format. Please upload a CSV file.'
-                
-            
-
-
-    
-    
 
 
 @app.route('/process', methods=['POST', 'GET'])
@@ -1572,7 +1502,7 @@ def process():
     # subject_code = request.form['subject_code']
     exam_type = request.form['exam_type']
     file = request.files['file']
-    
+
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
 
@@ -1602,91 +1532,81 @@ def faculty_dashboard():
 
     # Create the capitalized full name
     capitalized_name = capitalized_first_name + " " + capitalized_last_name
-        
+
     db_name = name.replace(' ', '_')
     path = 'faculty/' + db_name + '/Courses'
     # database_url = 'https://se-test-7f7e1-default-rtdb.firebaseio.com/'
-    
+
     courses = db.reference(path).get()
     course_list = list(courses.keys())
     course_names = []
-    
+
     for i in range(len(course_list)):
-        c_name = db.reference('course_names/'+course_list[i]+'/course_name').get()
+        c_name = db.reference(
+            'course_names/'+course_list[i]+'/course_name').get()
         course_names.append(c_name)
-        
+
     temp_b = db.reference('faculty/' + db_name + '/Courses').get()
     batch = []
     keys = list(temp_b.keys())
 
     for i in range(len(keys)):
-        batch.append(db.reference(f'faculty/' + db_name + '/Courses/' + keys[i]).get())
-        
-    
-    return render_template('index_faculty_db.html', prof_name = capitalized_name, course_list = course_list, course_names = course_names, batch = batch)
+        batch.append(db.reference(f'faculty/' + db_name +
+                     '/Courses/' + keys[i]).get())
+
+    return render_template('index_faculty_db.html', prof_name=capitalized_name, course_list=course_list, course_names=course_names, batch=batch)
 
 
-## need to make changes for faculty database
+# need to make changes for faculty database
 @app.route('/minor1_analytics')
 def minor1_analytics():
     course = request.args.get('course')
     batch = request.args.get('batch')
-    branch  =request.args.get('branch')
-    path = 'grades/' + batch + '/' +branch + '/' + course
-    
+    branch = request.args.get('branch')
+    path = 'grades/' + batch + '/' + branch + '/' + course
+
     data = db.reference(path).get()
     if data == None:
         return render_template('failure.html')
-    
-    
+
     studentID = list(data.keys())
-    
+
     minor1_grades = []
     for i in range(len(studentID)):
         marks = db.reference(path+'/'+studentID[i]).get()
         minor1_grades.append(marks['minor1'])
-        
-    #top 3 marks
+
+    # top 3 marks
     sorted_array = np.sort(minor1_grades)[::-1]
-    
-    
-        
-    
-        
+
     minor1_df = pd.DataFrame({'Minor1': np.array(minor1_grades)})
     fig = go.Figure()
     fig.add_trace(go.Box(y=minor1_df['Minor1'], name="Minor 1"))
-    fig.update_layout(title= "The grade analysis of the course " + course)
+    fig.update_layout(title="The grade analysis of the course " + course)
     fig.update_layout(showlegend=True)
     Q1 = np.percentile(minor1_grades, 25)
     Q3 = np.percentile(minor1_grades, 75)
-        
-        #Normal Curve 
+
+    # Normal Curve
     minor1_grades = np.array(minor1_grades)
     avg_m1 = np.mean(minor1_grades)
     std = np.std(minor1_grades)
-        
-        
 
-        # # Generate x-axis values
+    # # Generate x-axis values
     x = np.linspace(minor1_grades.min(), minor1_grades.max(), 100)
-    y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
+    y = (1 / (std * np.sqrt(2 * np.pi))) * \
+        np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
 
-       
-       
-       
-       
-       
-
-        # # Plot the bell curve
-    fig2 = go.Figure(data=go.Scatter(x=x, y=y, mode='lines', name='Bell Curve'))
+    # # Plot the bell curve
+    fig2 = go.Figure(data=go.Scatter(
+        x=x, y=y, mode='lines', name='Bell Curve'))
     fig2.update_layout(
         title="The normal distribution analysis of the " + course,
         xaxis_title='Marks',
         yaxis_title='Probability Density',
         showlegend=True
     )
-    
+
     sample = np.random.normal(avg_m1, std, len(minor1_grades))
 
     percentiles = [75, 90, 95]
@@ -1696,13 +1616,14 @@ def minor1_analytics():
     # Calculate the percentiles and the number of values above each percentile
     for percentile in percentiles:
         percentile_value = np.percentile(sample, percentile)
-        count_above_percentile = sum(value > percentile_value for value in sample)
+        count_above_percentile = sum(
+            value > percentile_value for value in sample)
         counts_above_percentiles.append(count_above_percentile)
-        
-        
+
         # Calculate the percentiles
-    colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
-    percentiles = [ 75, 90, 95]
+    # Specify colors for each percentile line
+    colors = ['red', 'blue', 'green']
+    percentiles = [75, 90, 95]
     percentile_values = np.percentile(minor1_grades, percentiles)
 
     for percentile, value, color in zip(percentiles, percentile_values, colors):
@@ -1729,12 +1650,7 @@ def minor1_analytics():
         )
 
     fig2.update_layout(showlegend=True)  # Display legends in the graph
-    
-    
-    
-    
-    
-    
+
     hist, bins = np.histogram(minor1_grades)
 
     # Find the bin with the highest count
@@ -1748,7 +1664,6 @@ def minor1_analytics():
     fig3 = go.Figure(data=[go.Histogram(x=minor1_grades)])
 
     # Find the index of the bin with the highest count
-   
 
     # Set the color for all bins
     colors = ['lightblue'] * len(hist)
@@ -1760,62 +1675,55 @@ def minor1_analytics():
     fig3.update_traces(marker=dict(color=colors))
 
     fig3.update_layout(title="Histogram of Minor 1 Grades",
-                        xaxis_title="Marks",
-    yaxis_title="Frequency")
-    
+                       xaxis_title="Marks",
+                       yaxis_title="Frequency")
 
-
-        
     graph_json = fig.to_json()
     graph2_json = fig2.to_json()
     graph3_json = fig3.to_json()
     highest = minor1_grades.max()
     lowest = minor1_grades.min()
-    
-    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m1, highest = highest, lowest = lowest, 
-                           course = course, type = 'Minor1', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
-                           asc = sorted_array, counts = counts_above_percentiles)
-    
-    
-   
+
+    return render_template('graph.html', graph_json=graph_json, graph2_json=graph2_json, graph3_json=graph3_json, avg=avg_m1, highest=highest, lowest=lowest,
+                           course=course, type='Minor1', q1=Q1, q2=Q3, start=range_start, end=range_end, high_freq_count=highest_freq_count+1,
+                           asc=sorted_array, counts=counts_above_percentiles)
+
+
 @app.route('/minor2_analytics')
 def minor2_analytics():
     course = request.args.get('course')
     batch = request.args.get('batch')
-    branch  =request.args.get('branch')
-    path = 'grades/' + batch + '/' +branch + '/' + course
-    
+    branch = request.args.get('branch')
+    path = 'grades/' + batch + '/' + branch + '/' + course
+
     data = db.reference(path).get()
-    
+
     if data == None:
         return render_template('failure.html')
-    
+
     studentID = list(data.keys())
-    
-    
-    check = db.reference(path+'/'+studentID[0]).get() 
+
+    check = db.reference(path+'/'+studentID[0]).get()
     check = list(check.keys())
-    
+
     if ('minor2' not in check):
         return render_template('failure.html')
-    
+
     minor1_grades = []
     minor2_grades = []
-    
+
     for i in range(len(studentID)):
-            
-        marks = db.reference(path+'/'+studentID[i]).get()  
-          
-        if(marks['minor2'] == None):
+
+        marks = db.reference(path+'/'+studentID[i]).get()
+
+        if (marks['minor2'] == None):
             return "Minor 2 grades have not been uploaded. Please upload Minor 2 grades"
-        
+
         minor1_grades.append(marks['minor1'])
         minor2_grades.append(marks['minor2'])
-        
+
     sorted_array = np.sort(minor2_grades)[::-1]
-        
-        
-    
+
     minor1_grades = np.array(minor1_grades)
     minor2_grades = np.array(minor2_grades)
     avg_m1 = np.mean(minor1_grades)
@@ -1826,23 +1734,23 @@ def minor2_analytics():
     fig.add_trace(go.Box(y=minor1_df['Minor1'], name="Minor 1"))
     fig.add_trace(go.Box(y=minor2_df['Minor2'], name="Minor 2"))
     fig.update_layout(showlegend=True)
-    
+
     Q1 = np.percentile(minor2_grades, 25)
-    Q3 = np.percentile(minor2_grades, 75)    
-        
-        
+    Q3 = np.percentile(minor2_grades, 75)
+
     std = np.std(minor2_grades)
     x = np.linspace(minor2_grades.min(), minor2_grades.max(), 100)
-    y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
-    fig2 = go.Figure(data=go.Scatter(x=x, y=y, mode='lines', name='Bell Curve'))
+    y = (1 / (std * np.sqrt(2 * np.pi))) * \
+        np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
+    fig2 = go.Figure(data=go.Scatter(
+        x=x, y=y, mode='lines', name='Bell Curve'))
     fig2.update_layout(
         title="The normal distribution analysis of the course " + course,
         xaxis_title='Marks',
         yaxis_title='Probability Density',
         showlegend=True
     )
-    
-    
+
     sample = np.random.normal(avg_m2, std, len(minor2_grades))
 
     percentiles = [75, 90, 95]
@@ -1852,13 +1760,14 @@ def minor2_analytics():
     # Calculate the percentiles and the number of values above each percentile
     for percentile in percentiles:
         percentile_value = np.percentile(sample, percentile)
-        count_above_percentile = sum(value > percentile_value for value in sample)
+        count_above_percentile = sum(
+            value > percentile_value for value in sample)
         counts_above_percentiles.append(count_above_percentile)
-        
-        
+
         # Calculate the percentiles
-    colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
-    percentiles = [ 75, 90, 95]
+    # Specify colors for each percentile line
+    colors = ['red', 'blue', 'green']
+    percentiles = [75, 90, 95]
     percentile_values = np.percentile(minor2_grades, percentiles)
 
     for percentile, value, color in zip(percentiles, percentile_values, colors):
@@ -1884,12 +1793,8 @@ def minor2_analytics():
             )
         )
 
-    
     fig2.update_layout(showlegend=True)  # Display legends in the graph
-    
-    
-    
-    
+
     hist, bins = np.histogram(minor2_grades)
 
     # Find the bin with the highest count
@@ -1903,7 +1808,6 @@ def minor2_analytics():
     fig3 = go.Figure(data=[go.Histogram(x=minor1_grades)])
 
     # Find the index of the bin with the highest count
-   
 
     # Set the color for all bins
     colors = ['lightblue'] * len(hist)
@@ -1915,11 +1819,10 @@ def minor2_analytics():
     fig3.update_traces(marker=dict(color=colors))
 
     fig3.update_layout(title="Histogram of Minor 2 Grades",
-                        xaxis_title="Marks",
-    yaxis_title="Frequency",)
-        
-    # fig3 = go.Figure(data=[go.Histogram(x=minor2_grades)])
+                       xaxis_title="Marks",
+                       yaxis_title="Frequency",)
 
+    # fig3 = go.Figure(data=[go.Histogram(x=minor2_grades)])
 
     # fig3.update_layout(
     #     title="Histogram for the Minor 2 grades",
@@ -1927,56 +1830,52 @@ def minor2_analytics():
     #     yaxis_title="Frequency"
     # )
 
-        
     graph_json = fig.to_json()
     graph2_json = fig2.to_json()
     graph3_json = fig3.to_json()
     highest = minor2_grades.max()
     lowest = minor2_grades.min()
-    
-    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_m2, highest = highest, lowest = lowest, 
-                           course = course, type = 'Minor 2', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
-                           asc = sorted_array,counts = counts_above_percentiles)
-    
-    
-    
-    
+
+    return render_template('graph.html', graph_json=graph_json, graph2_json=graph2_json, graph3_json=graph3_json, avg=avg_m2, highest=highest, lowest=lowest,
+                           course=course, type='Minor 2', q1=Q1, q2=Q3, start=range_start, end=range_end, high_freq_count=highest_freq_count+1,
+                           asc=sorted_array, counts=counts_above_percentiles)
+
 
 @app.route('/endsem_analytics')
 def endsem_analytics():
     course = request.args.get('course')
     batch = request.args.get('batch')
-    branch  =request.args.get('branch')
-    path = 'grades/' + batch + '/' +branch + '/' + course
-    
+    branch = request.args.get('branch')
+    path = 'grades/' + batch + '/' + branch + '/' + course
+
     data = db.reference(path).get()
     if data == None:
         return render_template('failure.html')
-    
+
     studentID = list(data.keys())
-    
-    check = db.reference(path+'/'+studentID[0]).get() 
+
+    check = db.reference(path+'/'+studentID[0]).get()
     check = list(check.keys())
-    
+
     if ('endsem' not in check):
         return render_template('failure.html')
-    
+
     minor1_grades = []
     minor2_grades = []
     end_sem_grades = []
     for i in range(len(studentID)):
         marks = db.reference(path+'/'+studentID[i]).get()
-        if(marks['minor1'] == None):
+        if (marks['minor1'] == None):
             return "Minor 1 grades have not been uploaded. Please upload Minor1 grades"
         elif (marks['minor2'] == None):
             return "Minor 2 grades have not been uploaded. Please upload Minor2 grades"
-            
+
         minor1_grades.append(marks['minor1'])
         minor2_grades.append(marks['minor2'])
         end_sem_grades.append(marks['endsem'])
-        
+
     sorted_array = np.sort(end_sem_grades)[::-1]
-            
+
     minor1_grades = np.array(minor1_grades)
     minor2_grades = np.array(minor2_grades)
     end_sem_grades = np.array(end_sem_grades)
@@ -1993,33 +1892,37 @@ def endsem_analytics():
     fig.update_layout(showlegend=True)
     Q1 = np.percentile(end_sem_grades, 25)
     Q3 = np.percentile(end_sem_grades, 75)
-        
+
     std = np.std(end_sem_grades)
     x = np.linspace(end_sem_grades.min(), end_sem_grades.max(), 100)
-    y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
-    fig2 = go.Figure(data=go.Scatter(x=x, y=y, mode='lines', name='Normal dist'))
+    y = (1 / (std * np.sqrt(2 * np.pi))) * \
+        np.exp(-0.5 * ((x - avg_m1) / std) ** 2)
+    fig2 = go.Figure(data=go.Scatter(
+        x=x, y=y, mode='lines', name='Normal dist'))
     fig2.update_layout(
         title="The normal distribution  analysis of the " + course,
         xaxis_title='Marks',
         yaxis_title='Probability Density',
         showlegend=True
     )
-    
+
     sample = np.random.normal(avg_endsem, std, len(end_sem_grades))
 
-    percentiles = [ 75, 90, 95]
+    percentiles = [75, 90, 95]
 
     counts_above_percentiles = []
 
     # Calculate the percentiles and the number of values above each percentile
     for percentile in percentiles:
         percentile_value = np.percentile(sample, percentile)
-        count_above_percentile = sum(value > percentile_value for value in sample)
+        count_above_percentile = sum(
+            value > percentile_value for value in sample)
         counts_above_percentiles.append(count_above_percentile)
-        
+
         # Calculate the percentiles
-    colors = ['red', 'blue', 'green']  # Specify colors for each percentile line
-   
+    # Specify colors for each percentile line
+    colors = ['red', 'blue', 'green']
+
     percentile_values = np.percentile(end_sem_grades, percentiles)
 
     for percentile, value, color in zip(percentiles, percentile_values, colors):
@@ -2045,9 +1948,8 @@ def endsem_analytics():
             )
         )
 
-    
     fig2.update_layout(showlegend=True)  # Display legends in the graph
-    
+
     hist, bins = np.histogram(end_sem_grades)
 
     # Find the bin with the highest count
@@ -2061,7 +1963,6 @@ def endsem_analytics():
     fig3 = go.Figure(data=[go.Histogram(x=end_sem_grades)])
 
     # Find the index of the bin with the highest count
-   
 
     # Set the color for all bins
     colors = ['lightblue'] * len(hist)
@@ -2073,35 +1974,31 @@ def endsem_analytics():
     fig3.update_traces(marker=dict(color=colors))
 
     fig3.update_layout(title="Histogram of End Sem Grades",
-                        xaxis_title="Marks",
-    yaxis_title="Frequency")
-        
-        
+                       xaxis_title="Marks",
+                       yaxis_title="Frequency")
+
     graph_json = fig.to_json()
     graph2_json = fig2.to_json()
     graph3_json = fig3.to_json()
     highest = end_sem_grades.max()
     lowest = end_sem_grades.min()
-    
-    return render_template('graph.html', graph_json = graph_json, graph2_json = graph2_json, graph3_json = graph3_json, avg = avg_endsem, highest = highest, lowest = lowest, 
-                           course = course, type = 'End Sem', q1 = Q1, q2 = Q3, start = range_start, end = range_end, high_freq_count = highest_freq_count+1,
-                           asc = sorted_array, counts = counts_above_percentiles)
-    
-    
+
+    return render_template('graph.html', graph_json=graph_json, graph2_json=graph2_json, graph3_json=graph3_json, avg=avg_endsem, highest=highest, lowest=lowest,
+                           course=course, type='End Sem', q1=Q1, q2=Q3, start=range_start, end=range_end, high_freq_count=highest_freq_count+1,
+                           asc=sorted_array, counts=counts_above_percentiles)
 
 
 @app.route('/menu_analytics')
 def menu_analytics():
     course = request.args.get('course')
     batch = request.args.get('batch')
-    if len(batch)>2:
+    if len(batch) > 2:
         batch = batch[2:]
     branch = course[:2]
-    
-    return render_template('menu_grades.html', course = course, batch = batch, branch = branch )
-    
-   
+
+    return render_template('menu_grades.html', course=course, batch=batch, branch=branch)
+
 
 if __name__ == '__main__':
     app.debug = True
-    app.run(host='0.0.0.0', port=6969)
+    socketio.run(app, host='0.0.0.0', port=6969)

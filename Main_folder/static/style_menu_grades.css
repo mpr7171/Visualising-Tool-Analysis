@@ -29,6 +29,7 @@ body{
     height: 100%;
     background: var(--blue);
     border-left: 10px solid var(--blue);
+    transition: 0.5s;
     overflow: hidden;
 }
 
@@ -372,14 +373,48 @@ body{
     margin-bottom: 10px;
     background-color: white;
     position: relative;
-    margin-left: -30px;
+    margin: 0;
 }
 
 #score-logo-mobile {
-    width: 180px;
-    height: 140;
+    width: 220px;
+    height: 180px;
     /* margin: 2px auto; */
-    /* padding: 10px; */
-    /* margin-top: -30px; */
+    padding: 10px;
+    margin-top: -30px;
     
     }
+
+.buttons{
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    justify-content: space-evenly;
+    align-items: center;
+    height: 100vh;
+}
+
+.btn {
+    position: relative;
+    background-color:#0a0a23;
+    color: #fff;
+    border:none; 
+    border-radius:10px; 
+    padding:15px;
+    height: 80px;
+}
+
+.btn:hover {
+    background-color:#002ead;
+    transition: 0.7s;
+}
+
+.btn:focus {
+    outline-color: transparent;
+    outline-style:solid;
+    box-shadow: 0 0 0 4px #5a01a7;
+}
+
+.btn:active {
+    background-color: #ffbf00;
+}

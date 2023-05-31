@@ -103,7 +103,7 @@ margin-top: -30px;
     margin-left: 0;
     z-index: 1;
     animation: fadeIn 0.5s ease-in-out 0.5s forwards;
-    background: #D7E3FC;
+    background: #f3fafe;
     margin-top: 0;
   }
 
@@ -169,7 +169,7 @@ margin-bottom: 550px;
   align-items: center;
   text-decoration: none;
   color: #000;
-  background-color: rgba(211, 211, 211, 0.2);
+  background-color: rgba(211, 211, 211, 0);
   transition: background-color 0.3s ease-in-out;
   padding: 10px;
 }

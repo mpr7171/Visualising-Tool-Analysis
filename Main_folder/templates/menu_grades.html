@@ -1,32 +1,70 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Select the Exam </title>
+    <title>Select the Exam</title>
+    <link rel="stylesheet" href="Main_folder/static/style_menu_grades.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style_menu_grades.css') }}">
 </head>
 <body>
-    <button onclick="redirectToMinor1('{{ course }}', '{{ batch }}', '{{branch}}')">View Minor1 Analysis</button>
-    <button onclick="redirectToMinor2('{{ course }}', '{{ batch }}', '{{branch}}')">View Minor2 Analysis</button>
-    <button onclick="redirectToEndsem('{{ course }}', '{{ batch }}', '{{branch}}')">View End sem Analysis</button>
-    
+    <div class="container">
+        <div class="navigation">
+            <ul>
+                <li>
+                    <div id="scorex-mobile">
+                        <img src="{{url_for('static', filename='img_fac_dashb/ScoreX_logo.png')}}" alt="Score Logo" id="score-logo-mobile">
+                    </div>
+                </li>
+                <li>
+                    <a href="{{ url_for('faculty_dashboard') }}">
+                        <span class="icon"><ion-icon name="home-outline"></ion-icon></span>
+                        <span class="title">Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <span class="icon"><ion-icon name="list-outline"></ion-icon></span>
+                        <span class="title">Courses</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <span class="icon"><ion-icon name="mail-unread-outline"></ion-icon></span>
+                        <span class="title">Messages</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('logout') }}">
+                        <span class="icon"><ion-icon name="log-out-outline"></ion-icon></span>
+                        <span class="title">Sign Out</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="buttons">
+            <button class="btn" onclick="redirectToMinor1('{{ course }}', '{{ batch }}', '{{branch}}')">View Minor1 Analysis</button>
+            <button class="btn" onclick="redirectToMinor2('{{ course }}', '{{ batch }}', '{{branch}}')">View Minor2 Analysis</button>
+            <button class="btn" onclick="redirectToEndsem('{{ course }}', '{{ batch }}', '{{branch}}')">View End sem Analysis</button>
+        </div>
+    </div>  
 
     
-
 
     <script>
         function redirectToMinor1(course, batch, branch) {
-            window.location.href = "/minor1_analytics?course="+ encodeURIComponent(course)+ "&batch=" + encodeURIComponent(batch) + "&branch=" + encodeURIComponent(branch) ;
+            window.location.href = "/minor1_analytics?course=" + encodeURIComponent(course) + "&batch=" + encodeURIComponent(batch) + "&branch=" + encodeURIComponent(branch);
         }
 
         function redirectToMinor2(course, batch, branch) {
-            window.location.href = "/minor2_analytics?course="+ encodeURIComponent(course)+ "&batch=" + encodeURIComponent(batch) + "&branch=" + encodeURIComponent(branch) ;
-
+            window.location.href = "/minor2_analytics?course=" + encodeURIComponent(course) + "&batch=" + encodeURIComponent(batch) + "&branch=" + encodeURIComponent(branch);
         }
 
         function redirectToEndsem(course, batch, branch) {
-            window.location.href = "/endsem_analytics?course="+ encodeURIComponent(course)+ "&batch=" + encodeURIComponent(batch) + "&branch=" + encodeURIComponent(branch) ;
+            window.location.href = "/endsem_analytics?course=" + encodeURIComponent(course) + "&batch=" + encodeURIComponent(batch) + "&branch=" + encodeURIComponent(branch);
         }
-
-        
     </script>
+
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </body>
 </html>

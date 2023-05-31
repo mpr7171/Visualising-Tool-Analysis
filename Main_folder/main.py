@@ -16,8 +16,6 @@ from functions import *
 from flask_socketio import SocketIO, send
 
 
-
-
 FIREBASE_WEB_API_KEY = "AIzaSyC0aEymSwOknoaBuMIYPrzU_JRLXmJF0dU"
 rest_api_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
 
@@ -38,6 +36,7 @@ message_log = ""
 
 database = db.reference('Gpa2')
 resources = db.reference('Resources')
+
 
 socketio = SocketIO(app, cors_allowed_origins="*")
 
@@ -63,7 +62,7 @@ def handle_message(message):
         print("Receiver: ", rec_user)
         with open(sent_user+'-'+rec_user+".txt", "w") as f:
             f.write(message)
-            # session["chat_box_info"] = session["chat_box_info"] + message + "</br>"
+            # session["chat_logs"] = session["chat_logs"] + message + "</br>"
         send(message, broadcast=True)
 
 
@@ -611,16 +610,18 @@ def get_analytics_info(year, branch, exam_type):
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
-
     if request.method == 'POST':
 
         email = request.form.get('email')
         password = request.form.get('password')
 
         try:
+
             token = sign_in_with_email_and_password(email, password)
             session['user_id'] = token['localId']
             session['email'] = email
+
+            # session["chat_logs"] = ""
             # print(token)
 
             if 'error' in token:
@@ -649,6 +650,8 @@ def login():
                     if token["registered"] == True:
                         email = token['email']
                         name = token['displayName']
+
+                        # session["chat_logs"] = ""
 
                         # print(name)
 
@@ -720,7 +723,6 @@ def logout():
 
 @app.route('/dashboard')
 def dashboard():
-    session['chat_box_info'] = message_log
     if not session.get('logged_in'):
         return redirect(url_for('login'))
 

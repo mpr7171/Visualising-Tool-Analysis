@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Select the Exam</title>
-    <link rel="stylesheet" href="Main_folder/static/style_menu_grades.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style_menu_grades.css') }}">
 </head>
+
 <body>
     <div class="container">
         <div class="navigation">
             <ul>
                 <li>
                     <div id="scorex-mobile">
-                        <img src="{{url_for('static', filename='img_fac_dashb/ScoreX_logo.png')}}" alt="Score Logo" id="score-logo-mobile">
+                        <img src="{{url_for('static', filename='img_fac_dashb/ScoreX_logo.png')}}" alt="Score Logo"
+                            id="score-logo-mobile">
                     </div>
                 </li>
                 <li>
@@ -40,15 +42,20 @@
                 </li>
             </ul>
         </div>
+        <div class="main">
 
-        <div class="buttons">
-            <button class="btn" onclick="redirectToMinor1('{{ course }}', '{{ batch }}', '{{branch}}')">View Minor1 Analysis</button>
-            <button class="btn" onclick="redirectToMinor2('{{ course }}', '{{ batch }}', '{{branch}}')">View Minor2 Analysis</button>
-            <button class="btn" onclick="redirectToEndsem('{{ course }}', '{{ batch }}', '{{branch}}')">View End sem Analysis</button>
+            <div class="buttons">
+                <button class="btn" onclick="redirectToMinor1('{{ course }}', '{{ batch }}', '{{branch}}')">View Minor1
+                    Analysis</button>
+                <button class="btn" onclick="redirectToMinor2('{{ course }}', '{{ batch }}', '{{branch}}')">View Minor2
+                    Analysis</button>
+                <button class="btn" onclick="redirectToEndsem('{{ course }}', '{{ batch }}', '{{branch}}')">View End sem
+                    Analysis</button>
+            </div>
         </div>
-    </div>  
+    </div>
 
-    
+
 
     <script>
         function redirectToMinor1(course, batch, branch) {
@@ -67,4 +74,5 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </body>
+
 </html>

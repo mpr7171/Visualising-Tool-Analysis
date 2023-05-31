@@ -1,23 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js"
+        integrity="sha512-xbQU0+iHqhVt7VIXi6vBJKPh3IQBF5B84sSHdjKiSccyX/1ZI7Vnkt2/8y8uruj63/DVmCxfUNohPNruthTEQA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"
+        integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles_fac_db.css') }}">
-
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
 </head>
+
 <body>
+    <script type="text/javascript">
+        console.log("Loaded script")
+        $(document).ready(function () {
+            var socket = io.connect("http://localhost:6969")
+            socket.on('connect', function () {
+                socket.send("User Connected!")
+            });
+
+            socket.on('message', function (data) {
+                console.log("In message")
+                sending_this = data
+                console.log("In socket.on " + sending_this)
+                $('#chat-box').innerHTML = '{{ chat_box_info }}'
+                $('#chat-box').append($('<span>').text(data)).append('</br>');
+            })
+
+            $('#send-button').on('click', function () {
+                console.log("Sending")
+                var val_send = '{{ prof_name }}' + ': ' + $('#chat-input').val()
+                socket.send(val_send);
+                $('#chat-input').val('');
+            })
+
+        })
+    </script>
+
     <div class="container">
         <div class="navigation">
             <ul>
                 <li>
                     <div id="scorex-mobile">
-                        <img src="{{url_for('static', filename='img_fac_dashb/ScoreX_logo.png')}}" alt="Score Logo" id="score-logo-mobile">
+                        <img src="{{url_for('static', filename='img_fac_dashb/ScoreX_logo.png')}}" alt="Score Logo"
+                            id="score-logo-mobile">
                     </div>
                 </li>
                 <li>
@@ -58,7 +93,7 @@
                     <img src="{{url_for('static', filename='img_fac_dashb/profile_icon.png')}}" alt="XXXX">
                 </div>
             </div>
-            
+
             <!--Cards-->
             <!-- <div class="cardBox">
                 <div class="card">
@@ -119,44 +154,64 @@
                         </thead>
                         <tbody>
                             {% for index in range(course_names|length) %}
-                                <tr>
-                                    <td>{{ course_names[index] }}</td>
-                                    <td>{{ course_list[index] }}</td>
-                                    <td>{{batch[index]}}</td>
-                                    <td>4</td>
-                                    <td><button onclick = "redirectToUploadPage()" class="uploadbtn">Upload Grades</button></td>
-                                    <script>
-                                        function redirectToUploadPage() {
-                                            var width = 600;
-                                            var height = 700;
-                                            var left = (window.innerWidth - width) / 2;
-                                            var top = (window.innerHeight - height) / 2;
-                                            var options = "width=" + width + ",height=" + height + ",left=" + left + ",top=" + top;
-                                            window.open("/upload", "Popup", options);
-                                        }
+                            <tr>
+                                <td>{{ course_names[index] }}</td>
+                                <td>{{ course_list[index] }}</td>
+                                <td>{{batch[index]}}</td>
+                                <td>4</td>
+                                <td><button onclick="redirectToUploadPage()" class="uploadbtn">Upload Grades</button>
+                                </td>
+                                <script>
+                                    function redirectToUploadPage() {
+                                        var width = 600;
+                                        var height = 700;
+                                        var left = (window.innerWidth - width) / 2;
+                                        var top = (window.innerHeight - height) / 2;
+                                        var options = "width=" + width + ",height=" + height + ",left=" + left + ",top=" + top;
+                                        window.open("/upload", "Popup", options);
+                                    }
 
 
-                                    </script>
-                                    <td><button onclick="redirectToAnalyticsPage('{{ course_list[index] }}', '{{ batch[index] }}')" class="analysisbtn">View Analysis</button></td>                                    <script>
-                                        function redirectToAnalyticsPage(courseName, batchValue) {
-                                            window.location.href = "/menu_analytics?course=" + encodeURIComponent(courseName) + "&batch=" + encodeURIComponent(batchValue);
-                                        }
+                                </script>
+                                <td><button
+                                        onclick="redirectToAnalyticsPage('{{ course_list[index] }}', '{{ batch[index] }}')"
+                                        class="analysisbtn">View Analysis</button></td>
+                                <script>
+                                    function redirectToAnalyticsPage(courseName, batchValue) {
+                                        window.location.href = "/menu_analytics?course=" + encodeURIComponent(courseName) + "&batch=" + encodeURIComponent(batchValue);
+                                    }
 
-                                        
-                                    </script>
-                                    
-                                </tr>
+
+                                </script>
+
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </div>
+            <div id="chat-icon" onclick="toggleChat()">
+                <i class="bx bx-chat"></i>
+            </div>
+
+            <div id="chat-interface">
+                <span id="close-button" onclick="closeChat()">&times;</span>
+                <div id="chat-box">
+
+                </div>
+                <div id="chat-input-container" class="input-container">
+                    <input type="text" id="chat-input" placeholder="Type your message...">
+                    <button id="send-button"><i class="bx bx-send"></i></button>
+                </div>
+            </div>
         </div>
-            
+
     </div>
 
 
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script src="{{ url_for('static', filename='script_analytics_redirect.js') }}"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </body>
+
 </html>

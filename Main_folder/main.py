@@ -62,8 +62,6 @@ def handle_message(message):
         first_letters = [word[0] for word in sent_user.split()]
         message = "<span>" + ''.join(first_letters) + ': ' + \
             str(message[finalInd+1:]) + "</span></br>"
-        print("Sender: ", sent_user)
-        print("Receiver: ", rec_user)
         with open(sent_user + ".txt", "a") as f:
             f.write(message)
         with open(rec_user + ".txt", "a") as f:
@@ -72,20 +70,17 @@ def handle_message(message):
         # Message history for sender:
         with open(sent_user + ".txt", "r") as f:
             msg = sent_user + f.read()
-            print("Sent 2\n", msg)
             send(msg, broadcast=True)
             time.sleep(1)
 
         with open(rec_user + ".txt", "r") as f:
             msg = rec_user + f.read()
-            print("Sent 1\n", msg)
             send(msg, broadcast=True)
     else:
         indexOfComma = message.index(',')
         curr_user = message[indexOfComma+2:]
         with open(curr_user + ".txt", "r") as f:
             msg = curr_user + f.read()
-            print("Sent connected")
             send(msg, broadcast=True)
 
 

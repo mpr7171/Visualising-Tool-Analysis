@@ -31,14 +31,9 @@
             socket.on('message', function (data) {
                 sending_this = data
                 if (data.startsWith('{{ prof_name }}')) {
-                    console.log("This is my data, {{ prof_name }}\n" + data)
                     data = data.replace('{{ prof_name }}', ' ')
                     document.getElementById('chat-box').innerHTML = data
                 }
-                else {
-                    console.log("Not my data")
-                }
-
 
             })
 

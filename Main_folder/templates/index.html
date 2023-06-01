@@ -30,12 +30,8 @@
       socket.on('message', function (data) {
         sending_this = data
         if (data.startsWith('{{ username }}')) {
-          console.log("This is my data, {{ username }}\n" + data)
           data = data.replace('{{ username }}', ' ')
           document.getElementById('chat-box').innerHTML = data
-        }
-        else {
-          console.log("Not my data")
         }
 
 

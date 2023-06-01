@@ -24,15 +24,21 @@
     $(document).ready(function () {
       var socket = io.connect("http://localhost:6969")
       socket.on('connect', function () {
-        socket.send("User Connected!")
+        socket.send("User Connected!, {{ username }}")
       });
 
       socket.on('message', function (data) {
-        console.log("In message")
         sending_this = data
-        console.log("In socket.on " + sending_this)
-        $('#chat-box').innerHTML = '{{ chat_box_info }}'
-        $('#chat-box').append($('<span>').text(data)).append('</br>');
+        if (data.startsWith('{{ username }}')) {
+          console.log("This is my data, {{ username }}\n" + data)
+          data = data.replace('{{ username }}', ' ')
+          document.getElementById('chat-box').innerHTML = data
+        }
+        else {
+          console.log("Not my data")
+        }
+
+
       })
 
       $('#send-button').on('click', function () {

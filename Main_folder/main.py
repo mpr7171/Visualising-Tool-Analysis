@@ -14,6 +14,7 @@ from datetime import datetime
 import logging
 from functions import *
 from flask_socketio import SocketIO, send
+import time
 
 
 FIREBASE_WEB_API_KEY = "AIzaSyC0aEymSwOknoaBuMIYPrzU_JRLXmJF0dU"
@@ -44,7 +45,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 @socketio.on('message')
 def handle_message(message):
     print("Received message: " + message)
-    if message != "User Connected!":
+    if not "User Connected!" in message:
         indexOfColon = message.index(':')
         sent_user = message[:indexOfColon]
         finalInd = 0
@@ -52,18 +53,40 @@ def handle_message(message):
             indexOfAt = message.index('@')
             next_whitespace_index = message.index(' ', indexOfAt + 1)
             rec_user = message[indexOfAt+1:next_whitespace_index]
+            rec_user = rec_user.replace("_", " ")
+            rec_user = rec_user.title()
             finalInd = next_whitespace_index
         except:
             rec_user = "None"
             finalInd = indexOfColon
         first_letters = [word[0] for word in sent_user.split()]
-        message = ''.join(first_letters) + ': ' + str(message[finalInd+1:])
+        message = "<span>" + ''.join(first_letters) + ': ' + \
+            str(message[finalInd+1:]) + "</span></br>"
         print("Sender: ", sent_user)
         print("Receiver: ", rec_user)
-        with open(sent_user+'-'+rec_user+".txt", "w") as f:
+        with open(sent_user + ".txt", "a") as f:
+            f.write(message)
+        with open(rec_user + ".txt", "a") as f:
             f.write(message)
             # session["chat_logs"] = session["chat_logs"] + message + "</br>"
-        send(message, broadcast=True)
+        # Message history for sender:
+        with open(sent_user + ".txt", "r") as f:
+            msg = sent_user + f.read()
+            print("Sent 2\n", msg)
+            send(msg, broadcast=True)
+            time.sleep(1)
+
+        with open(rec_user + ".txt", "r") as f:
+            msg = rec_user + f.read()
+            print("Sent 1\n", msg)
+            send(msg, broadcast=True)
+    else:
+        indexOfComma = message.index(',')
+        curr_user = message[indexOfComma+2:]
+        with open(curr_user + ".txt", "r") as f:
+            msg = curr_user + f.read()
+            print("Sent connected")
+            send(msg, broadcast=True)
 
 
 @app.after_request

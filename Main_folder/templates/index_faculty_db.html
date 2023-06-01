@@ -21,23 +21,28 @@
 
 <body>
     <script type="text/javascript">
-        console.log("Loaded script")
+        var sending_this = ''
         $(document).ready(function () {
             var socket = io.connect("http://localhost:6969")
             socket.on('connect', function () {
-                socket.send("User Connected!")
+                socket.send("User Connected!, {{ prof_name }}")
             });
 
             socket.on('message', function (data) {
-                console.log("In message")
                 sending_this = data
-                console.log("In socket.on " + sending_this)
-                $('#chat-box').innerHTML = '{{ chat_box_info }}'
-                $('#chat-box').append($('<span>').text(data)).append('</br>');
+                if (data.startsWith('{{ prof_name }}')) {
+                    console.log("This is my data, {{ prof_name }}\n" + data)
+                    data = data.replace('{{ prof_name }}', ' ')
+                    document.getElementById('chat-box').innerHTML = data
+                }
+                else {
+                    console.log("Not my data")
+                }
+
+
             })
 
             $('#send-button').on('click', function () {
-                console.log("Sending")
                 var val_send = '{{ prof_name }}' + ': ' + $('#chat-input').val()
                 socket.send(val_send);
                 $('#chat-input').val('');
